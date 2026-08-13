@@ -508,6 +508,160 @@ body {
 }
 
 
+
+/* =================================================
+   CONNEXION ÉDITEUR
+   ================================================= */
+
+.auth-panel {
+
+    position: absolute;
+    z-index: 1200;
+
+    top: 65px;
+    left: 62px;
+
+    width: 270px;
+
+    padding: 11px;
+
+    background:
+        rgba(17, 30, 48, 0.96);
+
+    color: white;
+
+    border:
+        1px solid
+        rgba(255,255,255,0.15);
+
+    border-radius: 10px;
+
+    box-shadow:
+        0 5px 18px
+        rgba(0,0,0,0.25);
+}
+
+
+.auth-title {
+
+    margin-bottom: 8px;
+
+    font-size: 12px;
+
+    font-weight: bold;
+}
+
+
+.auth-panel input {
+
+    width: 100%;
+
+    margin-bottom: 6px;
+
+    padding: 9px;
+
+    color: white;
+
+    background:
+        rgba(255,255,255,0.08);
+
+    border:
+        1px solid
+        rgba(255,255,255,0.15);
+
+    border-radius: 7px;
+
+    outline: none;
+}
+
+
+.auth-panel input:focus {
+
+    border-color:
+        #347fc1;
+}
+
+
+.auth-button {
+
+    width: 100%;
+
+    padding: 9px;
+
+    color: white;
+
+    background:
+        #347fc1;
+
+    border: none;
+
+    border-radius: 7px;
+
+    cursor: pointer;
+
+    font-weight: bold;
+}
+
+
+.auth-button:hover {
+
+    background:
+        #4294dc;
+}
+
+
+.auth-button.logout {
+
+    margin-top: 8px;
+
+    background:
+        rgba(200,50,50,0.35);
+
+    border:
+        1px solid
+        rgba(255,70,70,0.5);
+}
+
+
+.auth-error {
+
+    margin-top: 7px;
+
+    color: #ff7777;
+
+    font-size: 10px;
+}
+
+
+.editor-email {
+
+    color: #a9bfd3;
+
+    font-size: 11px;
+}
+
+
+.hidden {
+
+    display: none !important;
+}
+
+
+/* Outils verrouillés */
+
+.tool-button:disabled,
+.action-button:disabled,
+.tiny-btn:disabled,
+#colorPicker:disabled,
+#sizeRange:disabled,
+#newOperation:disabled {
+
+    opacity: 0.35;
+
+    cursor: not-allowed;
+}
+
+
 @media (max-width: 900px) {
 
     .toolbar {
@@ -559,6 +713,76 @@ body {
         <div class="header-subtitle">
             Carte opérationnelle collaborative
         </div>
+
+    </div>
+
+</div>
+
+
+
+<!-- ===============================================
+     CONNEXION ÉDITEUR
+     =============================================== -->
+
+<div class="auth-panel">
+
+    <div id="loginView">
+
+        <div class="auth-title">
+            🔐 Connexion éditeur
+        </div>
+
+        <input
+            id="loginEmail"
+            type="email"
+            placeholder="E-mail"
+            autocomplete="username"
+        >
+
+        <input
+            id="loginPassword"
+            type="password"
+            placeholder="Mot de passe"
+            autocomplete="current-password"
+        >
+
+        <button
+            id="loginButton"
+            type="button"
+            class="auth-button"
+        >
+            Se connecter
+        </button>
+
+        <div
+            id="loginError"
+            class="auth-error"
+        ></div>
+
+    </div>
+
+
+    <div
+        id="editorView"
+        class="hidden"
+    >
+
+        <div class="auth-title">
+            🟢 Mode éditeur
+        </div>
+
+        <div
+            id="editorEmail"
+            class="editor-email"
+        ></div>
+
+        <button
+            id="logoutButton"
+            type="button"
+            class="auth-button logout"
+        >
+            Se déconnecter
+        </button>
 
     </div>
 
@@ -856,7 +1080,9 @@ from
 
 import {
     getAuth,
-    signInAnonymously
+    signInWithEmailAndPassword,
+    signOut,
+    onAuthStateChanged
 }
 from
 "https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
@@ -1012,6 +1238,12 @@ const state = {
 
     weight:
         6,
+
+    auth:
+        null,
+
+    canEdit:
+        false,
 
     drawing:
         false,
@@ -1378,6 +1610,14 @@ document
         "click",
         async function() {
 
+    if (
+        !state.canEdit
+    ) {
+        return;
+    }
+
+
+
             const input =
                 document
                     .getElementById(
@@ -1487,6 +1727,14 @@ document
     .addEventListener(
         "click",
         async function() {
+
+    if (
+        !state.canEdit
+    ) {
+        return;
+    }
+
+
 
             const confirmation =
                 confirm(
@@ -1627,7 +1875,18 @@ function setTool(
     tool
 ) {
 
-    state.tool =
+    
+    if (
+        tool !== "navigate"
+        &&
+        !state.canEdit
+    ) {
+
+        return;
+
+    }
+
+state.tool =
         tool;
 
 
@@ -2005,6 +2264,14 @@ async function saveItem(
     item
 ) {
 
+    if (
+        !state.canEdit
+    ) {
+        return;
+    }
+
+
+
     state.data
         .set(
             id,
@@ -2059,6 +2326,14 @@ async function liveSave(
 ) {
 
     if (
+        !state.canEdit
+    ) {
+        return;
+    }
+
+
+
+    if (
         state.firebaseReady
         &&
         state.itemsRef
@@ -2084,6 +2359,14 @@ async function liveSave(
 async function deleteItem(
     id
 ) {
+
+    if (
+        !state.canEdit
+    ) {
+        return;
+    }
+
+
 
     if (
         !id
@@ -2180,6 +2463,14 @@ function startMove(
     id,
     event
 ) {
+
+    if (
+        !state.canEdit
+    ) {
+        return;
+    }
+
+
 
     if (
         state.tool
@@ -2948,6 +3239,14 @@ async function startDrawing(
 ) {
 
     if (
+        !state.canEdit
+    ) {
+        return;
+    }
+
+
+
+    if (
         [
             "navigate",
             "select",
@@ -3423,6 +3722,14 @@ map.on(
         event
     ) {
 
+    if (
+        !state.canEdit
+    ) {
+        return;
+    }
+
+
+
         if (
             state.tool
             !==
@@ -3505,6 +3812,14 @@ document
         "click",
         async function() {
 
+    if (
+        !state.canEdit
+    ) {
+        return;
+    }
+
+
+
             while (
                 state.ownHistory
                     .length
@@ -3553,6 +3868,14 @@ document
     .addEventListener(
         "click",
         async function() {
+
+    if (
+        !state.canEdit
+    ) {
+        return;
+    }
+
+
 
             const confirmation =
                 confirm(
@@ -3609,6 +3932,353 @@ document
 
 
 
+
+/* =================================================
+   MODE VISITEUR / ÉDITEUR
+   ================================================= */
+
+function setEditorMode(
+    user
+) {
+
+    state.canEdit =
+        !!user;
+
+
+    const loginView =
+        document
+            .getElementById(
+                "loginView"
+            );
+
+
+    const editorView =
+        document
+            .getElementById(
+                "editorView"
+            );
+
+
+    const editorEmail =
+        document
+            .getElementById(
+                "editorEmail"
+            );
+
+
+    const statusText =
+        document
+            .getElementById(
+                "statusText"
+            );
+
+
+    if (
+        user
+    ) {
+
+        loginView
+            .classList
+            .add(
+                "hidden"
+            );
+
+
+        editorView
+            .classList
+            .remove(
+                "hidden"
+            );
+
+
+        editorEmail
+            .textContent =
+            user.email;
+
+
+        statusText
+            .textContent =
+            "Mode éditeur";
+
+
+        state.userId =
+            user.uid;
+
+    }
+
+    else {
+
+        loginView
+            .classList
+            .remove(
+                "hidden"
+            );
+
+
+        editorView
+            .classList
+            .add(
+                "hidden"
+            );
+
+
+        statusText
+            .textContent =
+            "Lecture seule";
+
+
+        state.userId =
+            null;
+
+
+        setTool(
+            "navigate"
+        );
+
+    }
+
+
+
+    /* =============================================
+       BLOQUER / DÉBLOQUER LES OUTILS
+       ============================================= */
+
+    document
+        .querySelectorAll(
+            "[data-tool]"
+        )
+        .forEach(
+            function(
+                button
+            ) {
+
+                if (
+                    button
+                        .dataset
+                        .tool
+                    ===
+                    "navigate"
+                ) {
+
+                    button.disabled =
+                        false;
+
+                }
+
+                else {
+
+                    button.disabled =
+                        !state.canEdit;
+
+                }
+
+            }
+        );
+
+
+    document
+        .getElementById(
+            "colorPicker"
+        )
+        .disabled =
+        !state.canEdit;
+
+
+    document
+        .getElementById(
+            "sizeRange"
+        )
+        .disabled =
+        !state.canEdit;
+
+
+    document
+        .getElementById(
+            "undoButton"
+        )
+        .disabled =
+        !state.canEdit;
+
+
+    document
+        .getElementById(
+            "resetButton"
+        )
+        .disabled =
+        !state.canEdit;
+
+
+    document
+        .getElementById(
+            "createOperation"
+        )
+        .disabled =
+        !state.canEdit;
+
+
+    document
+        .getElementById(
+            "deleteOperation"
+        )
+        .disabled =
+        !state.canEdit;
+
+
+    document
+        .getElementById(
+            "newOperation"
+        )
+        .disabled =
+        !state.canEdit;
+
+}
+
+
+
+/* =================================================
+   CONNEXION
+   ================================================= */
+
+document
+    .getElementById(
+        "loginButton"
+    )
+    .addEventListener(
+        "click",
+        async function() {
+
+            const email =
+                document
+                    .getElementById(
+                        "loginEmail"
+                    )
+                    .value
+                    .trim();
+
+
+            const password =
+                document
+                    .getElementById(
+                        "loginPassword"
+                    )
+                    .value;
+
+
+            const error =
+                document
+                    .getElementById(
+                        "loginError"
+                    );
+
+
+            error.textContent =
+                "";
+
+
+            if (
+                !email
+                ||
+                !password
+            ) {
+
+                error.textContent =
+                    "Entre ton e-mail et ton mot de passe.";
+
+                return;
+
+            }
+
+
+            try {
+
+                await signInWithEmailAndPassword(
+
+                    state.auth,
+
+                    email,
+
+                    password
+
+                );
+
+
+                document
+                    .getElementById(
+                        "loginPassword"
+                    )
+                    .value =
+                    "";
+
+            }
+
+            catch (
+                erreur
+            ) {
+
+                console.error(
+                    erreur
+                );
+
+
+                error.textContent =
+                    "E-mail ou mot de passe incorrect.";
+
+            }
+
+        }
+    );
+
+
+
+document
+    .getElementById(
+        "loginPassword"
+    )
+    .addEventListener(
+        "keydown",
+        function(
+            event
+        ) {
+
+            if (
+                event.key
+                ===
+                "Enter"
+            ) {
+
+                document
+                    .getElementById(
+                        "loginButton"
+                    )
+                    .click();
+
+            }
+
+        }
+    );
+
+
+
+/* =================================================
+   DÉCONNEXION
+   ================================================= */
+
+document
+    .getElementById(
+        "logoutButton"
+    )
+    .addEventListener(
+        "click",
+        async function() {
+
+            await signOut(
+                state.auth
+            );
+
+        }
+    );
+
+
 /* =================================================
    FIREBASE
    ================================================= */
@@ -3647,15 +4317,21 @@ async function startFirebase() {
             );
 
 
-    const text =
+    const statusText =
         document
             .getElementById(
                 "statusText"
             );
 
 
+    /* ==========================================
+       VERROUILLAGE PAR DÉFAUT
+       ========================================== */
 
-    /* MODE LOCAL */
+    setEditorMode(
+        null
+    );
+
 
     if (
         !firebaseConfigured()
@@ -3668,11 +4344,9 @@ async function startFirebase() {
             );
 
 
-        text.textContent =
-            "Mode local";
-
-
-        loadLocal();
+        statusText
+            .textContent =
+            "Firebase non configuré";
 
 
         return;
@@ -3680,10 +4354,11 @@ async function startFirebase() {
     }
 
 
-
-    /* MODE FIREBASE */
-
     try {
+
+        /* ==========================================
+           INITIALISATION FIREBASE
+           ========================================== */
 
         const app =
             initializeApp(
@@ -3691,20 +4366,10 @@ async function startFirebase() {
             );
 
 
-        const auth =
+        state.auth =
             getAuth(
                 app
             );
-
-
-        const credential =
-            await signInAnonymously(
-                auth
-            );
-
-
-        state.userId =
-            credential.user.uid;
 
 
         state.database =
@@ -3712,6 +4377,15 @@ async function startFirebase() {
                 app
             );
 
+
+        state.firebaseReady =
+            true;
+
+
+
+        /* ==========================================
+           RÉFÉRENCES
+           ========================================== */
 
         state.itemsRef =
             ref(
@@ -3725,13 +4399,24 @@ async function startFirebase() {
 
         state.operationsRef =
             ref(
+
                 state.database,
+
                 "operations"
+
             );
 
 
-        state.firebaseReady =
-            true;
+
+        /* ==========================================
+           FIREBASE CONNECTÉ
+           ========================================== */
+
+        dot
+            .classList
+            .remove(
+                "offline"
+            );
 
 
         dot
@@ -3741,30 +4426,67 @@ async function startFirebase() {
             );
 
 
-        text.textContent =
-            "Temps réel connecté";
+        statusText
+            .textContent =
+            "Lecture seule";
 
 
 
-        /*
-            Enregistre automatiquement
-            l'opération actuelle.
-        */
+        /* ==========================================
+           ÉTAT DE CONNEXION UTILISATEUR
+           ========================================== */
 
-        await set(
+        onAuthStateChanged(
 
-            ref(
-                state.operationsRef,
-                state.room
-            ),
+            state.auth,
 
-            {
+            async function(
+                user
+            ) {
 
-                name:
-                    state.room,
+                setEditorMode(
+                    user
+                );
 
-                updatedAt:
-                    Date.now()
+
+                if (
+                    user
+                ) {
+
+                    try {
+
+                        await set(
+
+                            ref(
+                                state.operationsRef,
+                                state.room
+                            ),
+
+                            {
+
+                                name:
+                                    state.room,
+
+                                updatedAt:
+                                    Date.now()
+
+                            }
+
+                        );
+
+                    }
+
+                    catch (
+                        error
+                    ) {
+
+                        console.error(
+                            error
+                        );
+
+                    }
+
+                }
 
             }
 
@@ -3772,10 +4494,9 @@ async function startFirebase() {
 
 
 
-        /*
-            Synchronise la liste
-            des opérations.
-        */
+        /* ==========================================
+           SYNCHRONISATION DES OPÉRATIONS
+           ========================================== */
 
         onValue(
 
@@ -3787,9 +4508,11 @@ async function startFirebase() {
 
                 const firebaseOperations =
                     Object.keys(
+
                         snapshot.val()
                         ||
                         {}
+
                     );
 
 
@@ -3827,7 +4550,9 @@ async function startFirebase() {
 
 
 
-        /* DESSINS */
+        /* ==========================================
+           NOUVEAUX DESSINS
+           ========================================== */
 
         onChildAdded(
 
@@ -3850,6 +4575,11 @@ async function startFirebase() {
         );
 
 
+
+        /* ==========================================
+           DESSINS MODIFIÉS
+           ========================================== */
+
         onChildChanged(
 
             state.itemsRef,
@@ -3870,6 +4600,11 @@ async function startFirebase() {
 
         );
 
+
+
+        /* ==========================================
+           DESSINS SUPPRIMÉS
+           ========================================== */
 
         onChildRemoved(
 
@@ -3899,6 +4634,17 @@ async function startFirebase() {
         );
 
 
+        state.firebaseReady =
+            false;
+
+
+        dot
+            .classList
+            .remove(
+                "online"
+            );
+
+
         dot
             .classList
             .add(
@@ -3906,11 +4652,14 @@ async function startFirebase() {
             );
 
 
-        text.textContent =
+        statusText
+            .textContent =
             "Firebase non connecté";
 
 
-        loadLocal();
+        setEditorMode(
+            null
+        );
 
     }
 
@@ -3919,6 +4668,7 @@ async function startFirebase() {
 
 
 startFirebase();
+
 
 
 </script>
