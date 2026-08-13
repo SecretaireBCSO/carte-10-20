@@ -1,1 +1,2390 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
+    <title>Tableau tactique BCSO</title>
+
+    <link
+        rel="stylesheet"
+        href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    >
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        html,
+        body {
+            margin: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            font-family: Arial, sans-serif;
+            background: #2468A8;
+        }
+
+        #map {
+            width: 100%;
+            height: 100%;
+        }
+
+        .leaflet-container {
+            background: #2468A8;
+        }
+
+        .leaflet-container.mode-dessin {
+            cursor: crosshair !important;
+        }
+
+        .leaflet-container.mode-gomme {
+            cursor: not-allowed !important;
+        }
+
+
+        /* ==========================================
+           TITRE / LOGO
+        ========================================== */
+
+        .header {
+            position: absolute;
+            z-index: 1200;
+
+            top: 12px;
+            left: 62px;
+
+            display: flex;
+            align-items: center;
+            gap: 10px;
+
+            padding: 8px 12px;
+
+            background: rgba(17, 30, 48, 0.96);
+            color: white;
+
+            border: 1px solid rgba(255,255,255,0.15);
+            border-radius: 12px;
+
+            box-shadow: 0 5px 18px rgba(0,0,0,0.3);
+        }
+
+        .header img {
+            width: 40px;
+            height: 40px;
+            object-fit: contain;
+        }
+
+        .header-title {
+            font-size: 14px;
+            font-weight: bold;
+        }
+
+        .header-subtitle {
+            margin-top: 2px;
+
+            font-size: 10px;
+
+            color: #a9bfd3;
+        }
+
+
+        /* ==========================================
+           ÉTAT FIREBASE
+        ========================================== */
+
+        .status {
+            position: absolute;
+            z-index: 1200;
+
+            top: 12px;
+            right: 12px;
+
+            display: flex;
+            align-items: center;
+            gap: 8px;
+
+            padding: 9px 12px;
+
+            background: rgba(17, 30, 48, 0.96);
+            color: white;
+
+            border-radius: 10px;
+            border: 1px solid rgba(255,255,255,0.15);
+
+            font-size: 11px;
+        }
+
+        .status-dot {
+            width: 9px;
+            height: 9px;
+
+            border-radius: 50%;
+
+            background: #e0a43c;
+        }
+
+        .status-dot.online {
+            background: #40c96b;
+        }
+
+        .status-dot.offline {
+            background: #e34c4c;
+        }
+
+
+        /* ==========================================
+           SESSION
+        ========================================== */
+
+        .session {
+            position: absolute;
+            z-index: 1200;
+
+            top: 65px;
+            right: 12px;
+
+            width: 250px;
+
+            padding: 10px;
+
+            background: rgba(17, 30, 48, 0.96);
+            color: white;
+
+            border-radius: 10px;
+            border: 1px solid rgba(255,255,255,0.15);
+        }
+
+        .session-title {
+            margin-bottom: 7px;
+
+            font-size: 11px;
+            font-weight: bold;
+        }
+
+        .session-row {
+            display: flex;
+            gap: 6px;
+        }
+
+        .session input {
+            width: 100%;
+            min-width: 0;
+
+            padding: 8px;
+
+            color: white;
+            background: rgba(255,255,255,0.08);
+
+            border: 1px solid rgba(255,255,255,0.15);
+            border-radius: 7px;
+
+            outline: none;
+        }
+
+
+        /* ==========================================
+           BARRE D'OUTILS
+        ========================================== */
+
+        .toolbar {
+            position: absolute;
+            z-index: 1200;
+
+            left: 50%;
+            bottom: 15px;
+
+            transform: translateX(-50%);
+
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: center;
+
+            gap: 7px;
+
+            max-width: calc(100% - 30px);
+
+            padding: 10px;
+
+            background: rgba(17, 30, 48, 0.96);
+
+            border: 1px solid rgba(255,255,255,0.15);
+            border-radius: 13px;
+
+            box-shadow: 0 7px 25px rgba(0,0,0,0.4);
+        }
+
+        .tool-button,
+        .action-button,
+        select {
+            min-height: 38px;
+
+            padding: 8px 10px;
+
+            color: white;
+            background: rgba(255,255,255,0.07);
+
+            border: 1px solid rgba(255,255,255,0.15);
+            border-radius: 8px;
+
+            cursor: pointer;
+
+            font-size: 12px;
+        }
+
+        select option {
+            color: black;
+        }
+
+        .tool-button:hover,
+        .action-button:hover {
+            background: rgba(255,255,255,0.15);
+        }
+
+        .tool-button.active {
+            background: #347fc1;
+        }
+
+        .danger {
+            border-color: rgba(255,70,70,0.7);
+            background: rgba(200,50,50,0.2);
+        }
+
+        .danger:hover {
+            background: rgba(200,50,50,0.45);
+        }
+
+        .separator {
+            width: 1px;
+            height: 30px;
+
+            margin: 0 3px;
+
+            background: rgba(255,255,255,0.15);
+        }
+
+
+        /* ==========================================
+           COULEUR
+        ========================================== */
+
+        #colorPicker {
+            width: 40px;
+            height: 38px;
+
+            padding: 3px;
+
+            background: rgba(255,255,255,0.08);
+
+            border: 1px solid rgba(255,255,255,0.15);
+            border-radius: 8px;
+
+            cursor: pointer;
+        }
+
+
+        /* ==========================================
+           ÉPAISSEUR
+        ========================================== */
+
+        .size-box {
+            display: flex;
+            align-items: center;
+            gap: 7px;
+
+            color: white;
+
+            font-size: 11px;
+        }
+
+        #sizeRange {
+            width: 100px;
+        }
+
+
+        /* ==========================================
+           TEXTE SUR CARTE
+        ========================================== */
+
+        .map-text {
+            white-space: nowrap;
+
+            font-family: Arial, sans-serif;
+            font-weight: bold;
+
+            text-shadow:
+                -1px -1px 0 black,
+                 1px -1px 0 black,
+                -1px  1px 0 black,
+                 1px  1px 0 black;
+        }
+
+
+        /* ==========================================
+           FLÈCHE
+        ========================================== */
+
+        .arrow-head {
+            width: 0;
+            height: 0;
+
+            border-top: 8px solid transparent;
+            border-bottom: 8px solid transparent;
+            border-left: 16px solid currentColor;
+        }
+
+
+        /* ==========================================
+           MOBILE
+        ========================================== */
+
+        @media (max-width: 900px) {
+
+            .toolbar {
+                left: 8px;
+                right: 8px;
+
+                width: auto;
+
+                transform: none;
+            }
+
+            .session {
+                width: 210px;
+            }
+
+        }
+    </style>
+</head>
+
+
+<body>
+
+
+<div id="map"></div>
+
+
+<div class="header">
+
+    <img
+        src="bcso.png"
+        alt="BCSO"
+        onerror="this.style.display='none'"
+    >
+
+    <div>
+
+        <div class="header-title">
+            Tableau tactique BCSO
+        </div>
+
+        <div class="header-subtitle">
+            Carte opérationnelle collaborative
+        </div>
+
+    </div>
+
+</div>
+
+
+<div class="status">
+
+    <span
+        id="statusDot"
+        class="status-dot"
+    ></span>
+
+    <span id="statusText">
+        Initialisation...
+    </span>
+
+</div>
+
+
+<div class="session">
+
+    <div class="session-title">
+        Session / opération
+    </div>
+
+    <div class="session-row">
+
+        <input
+            id="roomInput"
+            value="operation-nord"
+            maxlength="40"
+        >
+
+        <button
+            id="roomButton"
+            class="action-button"
+        >
+            OK
+        </button>
+
+    </div>
+
+</div>
+
+
+<div class="toolbar">
+
+
+    <button
+        class="tool-button active"
+        data-tool="navigate"
+    >
+        👆 Navigation
+    </button>
+
+
+    <button
+        class="tool-button"
+        data-tool="pencil"
+    >
+        ✏️ Crayon
+    </button>
+
+
+    <button
+        class="tool-button"
+        data-tool="eraser"
+    >
+        🧽 Gomme
+    </button>
+
+
+    <div class="separator"></div>
+
+
+    <button
+        class="tool-button"
+        data-tool="line"
+    >
+        ／ Ligne
+    </button>
+
+
+    <button
+        class="tool-button"
+        data-tool="arrow"
+    >
+        ➜ Flèche
+    </button>
+
+
+    <button
+        class="tool-button"
+        data-tool="circle"
+    >
+        ◯ Cercle
+    </button>
+
+
+    <button
+        class="tool-button"
+        data-tool="text"
+    >
+        T Texte
+    </button>
+
+
+    <div class="separator"></div>
+
+
+    <input
+        id="colorPicker"
+        type="color"
+        value="#ff3030"
+        title="Couleur"
+    >
+
+
+    <div class="size-box">
+
+        Taille
+
+        <input
+            id="sizeRange"
+            type="range"
+            min="2"
+            max="20"
+            value="6"
+        >
+
+        <strong id="sizeValue">
+            6
+        </strong>
+
+    </div>
+
+
+    <div class="separator"></div>
+
+
+    <select id="mapStyle">
+
+        <option value="carte">
+            🗺️ Carte
+        </option>
+
+        <option value="routes">
+            🛣️ Routes
+        </option>
+
+        <option value="atlas">
+            🎨 Atlas
+        </option>
+
+        <option value="satellite">
+            🛰️ Satellite
+        </option>
+
+    </select>
+
+
+    <div class="separator"></div>
+
+
+    <button
+        id="undoButton"
+        class="action-button"
+    >
+        ↶ Annuler
+    </button>
+
+
+    <button
+        id="resetButton"
+        class="action-button danger"
+    >
+        🗑 Reset
+    </button>
+
+
+</div>
+
+
+
+<script
+    src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+></script>
+
+
+<script type="module">
+
+
+/* =================================================
+   CONFIGURATION FIREBASE
+
+   NE TOUCHE PAS À ÇA POUR L'INSTANT.
+
+   On remplacera les valeurs ensemble après.
+   ================================================= */
+
+
+const firebaseConfig = {
+
+    apiKey: "REMPLACE_MOI",
+
+    authDomain:
+        "REMPLACE_MOI.firebaseapp.com",
+
+    databaseURL:
+        "https://REMPLACE_MOI-default-rtdb.europe-west1.firebasedatabase.app",
+
+    projectId:
+        "REMPLACE_MOI",
+
+    storageBucket:
+        "REMPLACE_MOI.firebasestorage.app",
+
+    messagingSenderId:
+        "REMPLACE_MOI",
+
+    appId:
+        "REMPLACE_MOI"
+
+};
+
+
+
+/* =================================================
+   FIREBASE
+   ================================================= */
+
+
+import {
+    initializeApp
+}
+from
+"https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
+
+
+import {
+    getAuth,
+    signInAnonymously
+}
+from
+"https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
+
+
+import {
+    getDatabase,
+    ref,
+    push,
+    set,
+    remove,
+    onChildAdded,
+    onChildChanged,
+    onChildRemoved
+}
+from
+"https://www.gstatic.com/firebasejs/12.16.0/firebase-database.js";
+
+
+
+/* =================================================
+   CARTE
+   ================================================= */
+
+
+const map = L.map(
+    "map",
+    {
+
+        crs:
+            L.CRS.Simple,
+
+        minZoom:
+            -2,
+
+        maxZoom:
+            4,
+
+        doubleClickZoom:
+            false
+
+    }
+);
+
+
+const largeur = 1280;
+const hauteur = 1280;
+
+
+const bounds = [
+
+    [0, 0],
+
+    [hauteur, largeur]
+
+];
+
+
+
+/* =================================================
+   FONDS DE CARTE
+   ================================================= */
+
+
+const fonds = {
+
+    carte:
+        L.imageOverlay(
+            "carte.png",
+            bounds
+        ),
+
+    routes:
+        L.imageOverlay(
+            "routes.png",
+            bounds
+        ),
+
+    atlas:
+        L.imageOverlay(
+            "atlas.png",
+            bounds
+        ),
+
+    satellite:
+        L.imageOverlay(
+            "satellite.png",
+            bounds
+        )
+
+};
+
+
+let fondActuel =
+    fonds.carte;
+
+
+fondActuel.addTo(map);
+
+fondActuel.bringToBack();
+
+map.fitBounds(bounds);
+
+
+
+document
+    .getElementById(
+        "mapStyle"
+    )
+    .addEventListener(
+        "change",
+        function() {
+
+            map.removeLayer(
+                fondActuel
+            );
+
+            fondActuel =
+                fonds[
+                    this.value
+                ];
+
+            fondActuel
+                .addTo(map);
+
+            fondActuel
+                .bringToBack();
+
+        }
+    );
+
+
+
+/* =================================================
+   ÉTAT
+   ================================================= */
+
+
+let outil =
+    "navigate";
+
+
+let couleur =
+    "#ff3030";
+
+
+let epaisseur =
+    6;
+
+
+let dessinEnCours =
+    false;
+
+
+let idCourant =
+    null;
+
+
+let objetCourant =
+    null;
+
+
+let debut =
+    null;
+
+
+let firebaseActif =
+    false;
+
+
+let database =
+    null;
+
+
+let dessinsRef =
+    null;
+
+
+const layers =
+    new Map();
+
+
+const dataDessins =
+    new Map();
+
+
+const historique =
+    [];
+
+
+
+/* =================================================
+   SESSION
+   ================================================= */
+
+
+function nettoyerSession(
+    texte
+) {
+
+    return (
+        texte
+            .trim()
+            .toLowerCase()
+            .replace(
+                /[^a-z0-9_-]/g,
+                "-"
+            )
+            .slice(
+                0,
+                40
+            )
+        ||
+        "operation-nord"
+    );
+
+}
+
+
+const urlParams =
+    new URLSearchParams(
+        window.location.search
+    );
+
+
+let session =
+    nettoyerSession(
+        urlParams.get("room")
+        ||
+        "operation-nord"
+    );
+
+
+document
+    .getElementById(
+        "roomInput"
+    )
+    .value =
+    session;
+
+
+document
+    .getElementById(
+        "roomButton"
+    )
+    .addEventListener(
+        "click",
+        function() {
+
+            const nouvelle =
+                nettoyerSession(
+                    document
+                        .getElementById(
+                            "roomInput"
+                        )
+                        .value
+                );
+
+
+            const url =
+                new URL(
+                    window.location.href
+                );
+
+
+            url.searchParams.set(
+                "room",
+                nouvelle
+            );
+
+
+            window.location.href =
+                url.toString();
+
+        }
+    );
+
+
+
+/* =================================================
+   OUTILS
+   ================================================= */
+
+
+const boutonsOutils =
+    document
+        .querySelectorAll(
+            "[data-tool]"
+        );
+
+
+boutonsOutils
+    .forEach(
+        function(bouton) {
+
+            bouton
+                .addEventListener(
+                    "click",
+                    function() {
+
+                        outil =
+                            this
+                                .dataset
+                                .tool;
+
+
+                        boutonsOutils
+                            .forEach(
+                                function(b) {
+
+                                    b.classList
+                                        .toggle(
+                                            "active",
+                                            b.dataset.tool
+                                            ===
+                                            outil
+                                        );
+
+                                }
+                            );
+
+
+                        document
+                            .getElementById(
+                                "map"
+                            )
+                            .classList
+                            .remove(
+                                "mode-dessin",
+                                "mode-gomme"
+                            );
+
+
+                        if (
+                            outil
+                            ===
+                            "navigate"
+                        ) {
+
+                            map
+                                .dragging
+                                .enable();
+
+                        }
+
+                        else {
+
+                            map
+                                .dragging
+                                .disable();
+
+
+                            document
+                                .getElementById(
+                                    "map"
+                                )
+                                .classList
+                                .add(
+                                    outil
+                                    ===
+                                    "eraser"
+                                        ?
+                                        "mode-gomme"
+                                        :
+                                        "mode-dessin"
+                                );
+
+                        }
+
+                    }
+                );
+
+        }
+    );
+
+
+
+document
+    .getElementById(
+        "colorPicker"
+    )
+    .addEventListener(
+        "input",
+        function() {
+
+            couleur =
+                this.value;
+
+        }
+    );
+
+
+
+document
+    .getElementById(
+        "sizeRange"
+    )
+    .addEventListener(
+        "input",
+        function() {
+
+            epaisseur =
+                Number(
+                    this.value
+                );
+
+
+            document
+                .getElementById(
+                    "sizeValue"
+                )
+                .textContent =
+                this.value;
+
+        }
+    );
+
+
+
+/* =================================================
+   OUTILS UTILITAIRES
+   ================================================= */
+
+
+function coord(
+    latlng
+) {
+
+    return [
+
+        Math.round(
+            latlng.lat
+            *
+            10
+        )
+        /
+        10,
+
+        Math.round(
+            latlng.lng
+            *
+            10
+        )
+        /
+        10
+
+    ];
+
+}
+
+
+function versLatLng(
+    point
+) {
+
+    return L.latLng(
+        point[0],
+        point[1]
+    );
+
+}
+
+
+
+function nouvelId() {
+
+    if (
+        firebaseActif
+        &&
+        dessinsRef
+    ) {
+
+        return push(
+            dessinsRef
+        ).key;
+
+    }
+
+
+    return (
+        "local-"
+        +
+        Date.now()
+        +
+        "-"
+        +
+        Math.random()
+            .toString(36)
+            .slice(2)
+    );
+
+}
+
+
+
+/* =================================================
+   SAUVEGARDE LOCALE
+   ================================================= */
+
+
+function cleLocale() {
+
+    return (
+        "bcso-tableau-"
+        +
+        session
+    );
+
+}
+
+
+function sauvegarderLocal() {
+
+    const objet =
+        Object.fromEntries(
+            dataDessins
+        );
+
+
+    localStorage
+        .setItem(
+            cleLocale(),
+            JSON.stringify(
+                objet
+            )
+        );
+
+}
+
+
+function chargerLocal() {
+
+    try {
+
+        const contenu =
+            JSON.parse(
+                localStorage
+                    .getItem(
+                        cleLocale()
+                    )
+                ||
+                "{}"
+            );
+
+
+        Object
+            .entries(
+                contenu
+            )
+            .forEach(
+                function(
+                    [id, objet]
+                ) {
+
+                    afficherObjet(
+                        id,
+                        objet
+                    );
+
+                }
+            );
+
+    }
+
+    catch (
+        erreur
+    ) {
+
+        console.log(
+            erreur
+        );
+
+    }
+
+}
+
+
+
+/* =================================================
+   SAUVEGARDE
+   ================================================= */
+
+
+async function sauvegarderObjet(
+    id,
+    objet
+) {
+
+    dataDessins.set(
+        id,
+        objet
+    );
+
+
+    if (
+        firebaseActif
+        &&
+        dessinsRef
+    ) {
+
+        await set(
+            ref(
+                dessinsRef,
+                id
+            ),
+            objet
+        );
+
+    }
+
+    else {
+
+        afficherObjet(
+            id,
+            objet
+        );
+
+        sauvegarderLocal();
+
+    }
+
+}
+
+
+
+async function supprimerObjet(
+    id
+) {
+
+    if (
+        firebaseActif
+        &&
+        dessinsRef
+    ) {
+
+        await remove(
+            ref(
+                dessinsRef,
+                id
+            )
+        );
+
+    }
+
+    else {
+
+        retirerAffichage(
+            id
+        );
+
+        sauvegarderLocal();
+
+    }
+
+}
+
+
+
+/* =================================================
+   RETIRER AFFICHAGE
+   ================================================= */
+
+
+function retirerAffichage(
+    id
+) {
+
+    const layer =
+        layers.get(
+            id
+        );
+
+
+    if (
+        layer
+    ) {
+
+        map.removeLayer(
+            layer
+        );
+
+        layers.delete(
+            id
+        );
+
+    }
+
+
+    dataDessins.delete(
+        id
+    );
+
+}
+
+
+
+/* =================================================
+   GOMME
+   ================================================= */
+
+
+function ajouterGomme(
+    layer,
+    id
+) {
+
+    layer.on(
+        "click",
+        async function(
+            evenement
+        ) {
+
+            if (
+                outil
+                !==
+                "eraser"
+            ) {
+
+                return;
+
+            }
+
+
+            L.DomEvent
+                .stopPropagation(
+                    evenement
+                );
+
+
+            await supprimerObjet(
+                id
+            );
+
+        }
+    );
+
+}
+
+
+
+/* =================================================
+   AFFICHAGE DES FORMES
+   ================================================= */
+
+
+function afficherObjet(
+    id,
+    objet
+) {
+
+    retirerAffichage(
+        id
+    );
+
+
+    const options = {
+
+        color:
+            objet.couleur,
+
+        weight:
+            objet.epaisseur,
+
+        opacity:
+            0.95,
+
+        lineCap:
+            "round",
+
+        lineJoin:
+            "round"
+
+    };
+
+
+    let layer =
+        null;
+
+
+
+    /* CRAYON / LIGNE */
+
+    if (
+        objet.type
+        ===
+        "pencil"
+        ||
+        objet.type
+        ===
+        "line"
+    ) {
+
+        layer =
+            L.polyline(
+                objet.points
+                    .map(
+                        versLatLng
+                    ),
+                options
+            );
+
+
+        ajouterGomme(
+            layer,
+            id
+        );
+
+    }
+
+
+
+    /* FLÈCHE */
+
+    else if (
+        objet.type
+        ===
+        "arrow"
+    ) {
+
+        const groupe =
+            L.layerGroup();
+
+
+        const points =
+            objet.points
+                .map(
+                    versLatLng
+                );
+
+
+        const ligne =
+            L.polyline(
+                points,
+                options
+            );
+
+
+        groupe.addLayer(
+            ligne
+        );
+
+
+        if (
+            points.length
+            >=
+            2
+        ) {
+
+            const a =
+                map
+                    .latLngToLayerPoint(
+                        points[
+                            points.length
+                            -
+                            2
+                        ]
+                    );
+
+
+            const b =
+                map
+                    .latLngToLayerPoint(
+                        points[
+                            points.length
+                            -
+                            1
+                        ]
+                    );
+
+
+            const angle =
+                Math.atan2(
+                    b.y
+                    -
+                    a.y,
+                    b.x
+                    -
+                    a.x
+                )
+                *
+                180
+                /
+                Math.PI;
+
+
+            const icon =
+                L.divIcon({
+
+                    className:
+                        "",
+
+                    html:
+                        `
+                        <div
+                            class="arrow-head"
+                            style="
+                                color:${objet.couleur};
+                                transform:rotate(${angle}deg);
+                            "
+                        ></div>
+                        `,
+
+                    iconSize:
+                        [18,18],
+
+                    iconAnchor:
+                        [9,9]
+
+                });
+
+
+            groupe
+                .addLayer(
+
+                    L.marker(
+                        points[
+                            points.length
+                            -
+                            1
+                        ],
+                        {
+                            icon:
+                                icon
+                        }
+                    )
+
+                );
+
+        }
+
+
+        groupe
+            .eachLayer(
+                function(
+                    sousLayer
+                ) {
+
+                    ajouterGomme(
+                        sousLayer,
+                        id
+                    );
+
+                }
+            );
+
+
+        layer =
+            groupe;
+
+    }
+
+
+
+    /* CERCLE */
+
+    else if (
+        objet.type
+        ===
+        "circle"
+    ) {
+
+        const centre =
+            versLatLng(
+                objet.centre
+            );
+
+
+        const bord =
+            versLatLng(
+                objet.bord
+            );
+
+
+        const rayon =
+            map.distance(
+                centre,
+                bord
+            );
+
+
+        layer =
+            L.circle(
+                centre,
+                {
+
+                    ...options,
+
+                    radius:
+                        rayon,
+
+                    fill:
+                        false
+
+                }
+            );
+
+
+        ajouterGomme(
+            layer,
+            id
+        );
+
+    }
+
+
+
+    /* TEXTE */
+
+    else if (
+        objet.type
+        ===
+        "text"
+    ) {
+
+        const icon =
+            L.divIcon({
+
+                className:
+                    "",
+
+                html:
+                    `
+                    <div
+                        class="map-text"
+                        style="
+                            color:${objet.couleur};
+                            font-size:${Math.max(
+                                14,
+                                objet.epaisseur
+                                *
+                                2
+                                +
+                                5
+                            )}px;
+                        "
+                    >
+                        ${objet.texte}
+                    </div>
+                    `
+
+            });
+
+
+        layer =
+            L.marker(
+                versLatLng(
+                    objet.position
+                ),
+                {
+                    icon:
+                        icon
+                }
+            );
+
+
+        ajouterGomme(
+            layer,
+            id
+        );
+
+    }
+
+
+
+    if (
+        !layer
+    ) {
+
+        return;
+
+    }
+
+
+    layer.addTo(
+        map
+    );
+
+
+    layers.set(
+        id,
+        layer
+    );
+
+
+    dataDessins.set(
+        id,
+        objet
+    );
+
+}
+
+
+
+/* =================================================
+   DÉBUT DESSIN
+   ================================================= */
+
+
+async function debutDessin(
+    evenement
+) {
+
+    if (
+        outil
+        ===
+        "navigate"
+        ||
+        outil
+        ===
+        "eraser"
+        ||
+        outil
+        ===
+        "text"
+    ) {
+
+        return;
+
+    }
+
+
+    dessinEnCours =
+        true;
+
+
+    idCourant =
+        nouvelId();
+
+
+    debut =
+        coord(
+            evenement.latlng
+        );
+
+
+    if (
+        outil
+        ===
+        "pencil"
+    ) {
+
+        objetCourant = {
+
+            type:
+                "pencil",
+
+            couleur:
+                couleur,
+
+            epaisseur:
+                epaisseur,
+
+            points:
+                [
+                    debut
+                ]
+
+        };
+
+    }
+
+
+    else if (
+        outil
+        ===
+        "line"
+        ||
+        outil
+        ===
+        "arrow"
+    ) {
+
+        objetCourant = {
+
+            type:
+                outil,
+
+            couleur:
+                couleur,
+
+            epaisseur:
+                epaisseur,
+
+            points:
+                [
+                    debut,
+                    debut
+                ]
+
+        };
+
+    }
+
+
+    else if (
+        outil
+        ===
+        "circle"
+    ) {
+
+        objetCourant = {
+
+            type:
+                "circle",
+
+            couleur:
+                couleur,
+
+            epaisseur:
+                epaisseur,
+
+            centre:
+                debut,
+
+            bord:
+                debut
+
+        };
+
+    }
+
+
+    historique.push(
+        idCourant
+    );
+
+}
+
+
+
+/* =================================================
+   DESSIN EN COURS
+   ================================================= */
+
+
+function bougerDessin(
+    evenement
+) {
+
+    if (
+        !dessinEnCours
+        ||
+        !objetCourant
+    ) {
+
+        return;
+
+    }
+
+
+    const position =
+        coord(
+            evenement.latlng
+        );
+
+
+    if (
+        objetCourant.type
+        ===
+        "pencil"
+    ) {
+
+        objetCourant
+            .points
+            .push(
+                position
+            );
+
+    }
+
+
+    else if (
+        objetCourant.type
+        ===
+        "line"
+        ||
+        objetCourant.type
+        ===
+        "arrow"
+    ) {
+
+        objetCourant
+            .points[1] =
+            position;
+
+    }
+
+
+    else if (
+        objetCourant.type
+        ===
+        "circle"
+    ) {
+
+        objetCourant
+            .bord =
+            position;
+
+    }
+
+
+    afficherObjet(
+        idCourant,
+        objetCourant
+    );
+
+}
+
+
+
+/* =================================================
+   FIN DESSIN
+   ================================================= */
+
+
+async function finDessin() {
+
+    if (
+        !dessinEnCours
+        ||
+        !objetCourant
+    ) {
+
+        return;
+
+    }
+
+
+    dessinEnCours =
+        false;
+
+
+    await sauvegarderObjet(
+        idCourant,
+        objetCourant
+    );
+
+
+    idCourant =
+        null;
+
+
+    objetCourant =
+        null;
+
+
+    debut =
+        null;
+
+}
+
+
+
+map.on(
+    "mousedown",
+    debutDessin
+);
+
+
+map.on(
+    "mousemove",
+    bougerDessin
+);
+
+
+map.on(
+    "mouseup",
+    finDessin
+);
+
+
+
+/* =================================================
+   TEXTE
+   ================================================= */
+
+
+map.on(
+    "click",
+    async function(
+        evenement
+    ) {
+
+        if (
+            outil
+            !==
+            "text"
+        ) {
+
+            return;
+
+        }
+
+
+        const texte =
+            prompt(
+                "Texte à placer :"
+            );
+
+
+        if (
+            !texte
+            ||
+            !texte.trim()
+        ) {
+
+            return;
+
+        }
+
+
+        const id =
+            nouvelId();
+
+
+        const objet = {
+
+            type:
+                "text",
+
+            couleur:
+                couleur,
+
+            epaisseur:
+                epaisseur,
+
+            texte:
+                texte
+                    .trim()
+                    .slice(
+                        0,
+                        80
+                    ),
+
+            position:
+                coord(
+                    evenement.latlng
+                )
+
+        };
+
+
+        historique.push(
+            id
+        );
+
+
+        await sauvegarderObjet(
+            id,
+            objet
+        );
+
+    }
+);
+
+
+
+/* =================================================
+   ANNULER
+   ================================================= */
+
+
+document
+    .getElementById(
+        "undoButton"
+    )
+    .addEventListener(
+        "click",
+        async function() {
+
+            const id =
+                historique.pop();
+
+
+            if (
+                !id
+            ) {
+
+                return;
+
+            }
+
+
+            await supprimerObjet(
+                id
+            );
+
+        }
+    );
+
+
+
+/* =================================================
+   RESET
+   ================================================= */
+
+
+document
+    .getElementById(
+        "resetButton"
+    )
+    .addEventListener(
+        "click",
+        async function() {
+
+            const confirmation =
+                confirm(
+                    "ATTENTION : supprimer TOUS les dessins de cette session ?"
+                );
+
+
+            if (
+                !confirmation
+            ) {
+
+                return;
+
+            }
+
+
+            if (
+                firebaseActif
+                &&
+                dessinsRef
+            ) {
+
+                await remove(
+                    dessinsRef
+                );
+
+            }
+
+            else {
+
+                Array.from(
+                    layers.keys()
+                )
+                .forEach(
+                    retirerAffichage
+                );
+
+
+                localStorage
+                    .removeItem(
+                        cleLocale()
+                    );
+
+            }
+
+
+            historique.length =
+                0;
+
+        }
+    );
+
+
+
+/* =================================================
+   FIREBASE
+   ================================================= */
+
+
+function firebaseConfigure() {
+
+    return (
+        firebaseConfig.apiKey
+        &&
+        !firebaseConfig.apiKey
+            .includes(
+                "REMPLACE"
+            )
+    );
+
+}
+
+
+
+async function demarrerFirebase() {
+
+    const statusDot =
+        document
+            .getElementById(
+                "statusDot"
+            );
+
+
+    const statusText =
+        document
+            .getElementById(
+                "statusText"
+            );
+
+
+
+    /* MODE LOCAL */
+
+    if (
+        !firebaseConfigure()
+    ) {
+
+        statusDot
+            .classList
+            .add(
+                "offline"
+            );
+
+
+        statusText
+            .textContent =
+            "Mode local";
+
+
+        chargerLocal();
+
+
+        return;
+
+    }
+
+
+
+    /* MODE TEMPS RÉEL */
+
+    try {
+
+        const app =
+            initializeApp(
+                firebaseConfig
+            );
+
+
+        const auth =
+            getAuth(
+                app
+            );
+
+
+        await signInAnonymously(
+            auth
+        );
+
+
+        database =
+            getDatabase(
+                app
+            );
+
+
+        dessinsRef =
+            ref(
+                database,
+                "tableaux/"
+                +
+                session
+                +
+                "/dessins"
+            );
+
+
+        firebaseActif =
+            true;
+
+
+        statusDot
+            .classList
+            .add(
+                "online"
+            );
+
+
+        statusText
+            .textContent =
+            "Temps réel connecté";
+
+
+
+        onChildAdded(
+            dessinsRef,
+            function(
+                snapshot
+            ) {
+
+                afficherObjet(
+                    snapshot.key,
+                    snapshot.val()
+                );
+
+            }
+        );
+
+
+
+        onChildChanged(
+            dessinsRef,
+            function(
+                snapshot
+            ) {
+
+                afficherObjet(
+                    snapshot.key,
+                    snapshot.val()
+                );
+
+            }
+        );
+
+
+
+        onChildRemoved(
+            dessinsRef,
+            function(
+                snapshot
+            ) {
+
+                retirerAffichage(
+                    snapshot.key
+                );
+
+            }
+        );
+
+    }
+
+
+    catch (
+        erreur
+    ) {
+
+        console.error(
+            erreur
+        );
+
+
+        statusDot
+            .classList
+            .add(
+                "offline"
+            );
+
+
+        statusText
+            .textContent =
+            "Firebase non connecté";
+
+
+        chargerLocal();
+
+    }
+
+}
+
+
+
+demarrerFirebase();
+
+
+</script>
+
+
+</body>
+</html>
