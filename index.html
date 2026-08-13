@@ -18,7 +18,7 @@
             width: 100%;
             height: 100%;
             overflow: hidden;
-            background: #2468a8;
+            background: #2468A8;
         }
 
         #map {
@@ -26,9 +26,149 @@
             height: 100%;
         }
 
-        /* Couleur autour de la carte */
         .leaflet-container {
-            background: #2468a8;
+            background: #2468A8;
+        }
+
+        /* =========================
+           BOUTON DU PANEL
+        ========================= */
+
+        .filters-control {
+            font-family: Arial, sans-serif;
+        }
+
+        .filters-button {
+            width: 46px;
+            height: 46px;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 10px;
+
+            background: rgba(17, 30, 48, 0.95);
+            color: white;
+
+            font-size: 22px;
+
+            cursor: pointer;
+
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
+
+            transition: 0.2s;
+        }
+
+        .filters-button:hover {
+            background: #244b70;
+            transform: scale(1.04);
+        }
+
+        /* =========================
+           PANEL
+        ========================= */
+
+        .filters-panel {
+            width: 250px;
+
+            margin-top: 8px;
+
+            background: rgba(17, 30, 48, 0.96);
+            color: white;
+
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 12px;
+
+            box-shadow: 0 8px 28px rgba(0, 0, 0, 0.4);
+
+            overflow: hidden;
+        }
+
+        .filters-panel.hidden {
+            display: none;
+        }
+
+        .filters-header {
+            padding: 14px 16px;
+
+            background: rgba(36, 104, 168, 0.35);
+
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .filters-title {
+            font-size: 15px;
+            font-weight: bold;
+        }
+
+        .filters-subtitle {
+            margin-top: 3px;
+
+            font-size: 11px;
+
+            color: #a9bfd3;
+        }
+
+        .filters-list {
+            padding: 10px;
+        }
+
+        .filter-item {
+            display: flex;
+            align-items: center;
+
+            padding: 8px;
+
+            border-radius: 7px;
+
+            font-size: 13px;
+
+            cursor: pointer;
+
+            transition: 0.15s;
+        }
+
+        .filter-item:hover {
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .filter-item input {
+            width: 16px;
+            height: 16px;
+
+            margin-right: 9px;
+
+            cursor: pointer;
+
+            accent-color: #4da3e6;
+        }
+
+        .filter-all {
+            font-weight: bold;
+        }
+
+        .separator {
+            height: 1px;
+
+            margin: 7px 4px;
+
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        /* Frontières séparées visuellement */
+
+        .frontiere-section {
+            margin-top: 7px;
+            padding-top: 7px;
+
+            border-top: 1px solid rgba(255, 255, 255, 0.12);
+        }
+
+        .frontiere-item {
+            color: #ffd36a;
+            font-weight: bold;
         }
     </style>
 </head>
@@ -40,14 +180,17 @@
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
 <script>
-    // Création de la carte
+
+    /* =========================
+       CARTE
+    ========================= */
+
     const map = L.map("map", {
         crs: L.CRS.Simple,
         minZoom: -2,
         maxZoom: 4
     });
 
-    // Taille de l'image GTA
     const largeur = 1280;
     const hauteur = 1280;
 
@@ -56,11 +199,410 @@
         [hauteur, largeur]
     ];
 
-    // Affichage de l'image
     L.imageOverlay("carte.png", bounds).addTo(map);
 
-    // Centre automatiquement la carte
     map.fitBounds(bounds);
+
+
+    /* =========================
+       GROUPES DES 10-20
+    ========================= */
+
+    const groupes = {
+
+        sandyShores: L.layerGroup().addTo(map),
+
+        grapeseed: L.layerGroup().addTo(map),
+
+        harmony: L.layerGroup().addTo(map),
+
+        route68: L.layerGroup().addTo(map),
+
+        grandSenora: L.layerGroup().addTo(map),
+
+        paletoBay: L.layerGroup().addTo(map),
+
+        montagnes: L.layerGroup().addTo(map),
+
+        alamoSea: L.layerGroup().addTo(map),
+
+        zancudo: L.layerGroup().addTo(map),
+
+        frontieres: L.layerGroup().addTo(map)
+    };
+
+
+    /* =========================
+       CRÉATION DU PANEL
+    ========================= */
+
+    const FiltersControl = L.Control.extend({
+
+        options: {
+            position: "topright"
+        },
+
+        onAdd: function () {
+
+            const container = L.DomUtil.create(
+                "div",
+                "filters-control"
+            );
+
+            container.innerHTML = `
+
+                <button
+                    id="filtersButton"
+                    class="filters-button"
+                    title="Filtres"
+                >
+                    ☰
+                </button>
+
+                <div
+                    id="filtersPanel"
+                    class="filters-panel hidden"
+                >
+
+                    <div class="filters-header">
+
+                        <div class="filters-title">
+                            Filtres 10-20
+                        </div>
+
+                        <div class="filters-subtitle">
+                            Blaine County / Nord
+                        </div>
+
+                    </div>
+
+                    <div class="filters-list">
+
+                        <label class="filter-item filter-all">
+
+                            <input
+                                type="checkbox"
+                                id="allZones"
+                                checked
+                            >
+
+                            Tous les 10-20
+
+                        </label>
+
+
+                        <div class="separator"></div>
+
+
+                        <label class="filter-item">
+
+                            <input
+                                type="checkbox"
+                                data-zone="sandyShores"
+                                checked
+                            >
+
+                            Sandy Shores
+
+                        </label>
+
+
+                        <label class="filter-item">
+
+                            <input
+                                type="checkbox"
+                                data-zone="grapeseed"
+                                checked
+                            >
+
+                            Grapeseed
+
+                        </label>
+
+
+                        <label class="filter-item">
+
+                            <input
+                                type="checkbox"
+                                data-zone="harmony"
+                                checked
+                            >
+
+                            Harmony
+
+                        </label>
+
+
+                        <label class="filter-item">
+
+                            <input
+                                type="checkbox"
+                                data-zone="route68"
+                                checked
+                            >
+
+                            Route 68
+
+                        </label>
+
+
+                        <label class="filter-item">
+
+                            <input
+                                type="checkbox"
+                                data-zone="grandSenora"
+                                checked
+                            >
+
+                            Grand Senora
+
+                        </label>
+
+
+                        <label class="filter-item">
+
+                            <input
+                                type="checkbox"
+                                data-zone="paletoBay"
+                                checked
+                            >
+
+                            Paleto Bay
+
+                        </label>
+
+
+                        <label class="filter-item">
+
+                            <input
+                                type="checkbox"
+                                data-zone="montagnes"
+                                checked
+                            >
+
+                            Montagnes / Chiliad
+
+                        </label>
+
+
+                        <label class="filter-item">
+
+                            <input
+                                type="checkbox"
+                                data-zone="alamoSea"
+                                checked
+                            >
+
+                            Alamo Sea
+
+                        </label>
+
+
+                        <label class="filter-item">
+
+                            <input
+                                type="checkbox"
+                                data-zone="zancudo"
+                                checked
+                            >
+
+                            Zancudo / Côte Ouest
+
+                        </label>
+
+
+                        <div class="frontiere-section">
+
+                            <label class="filter-item frontiere-item">
+
+                                <input
+                                    type="checkbox"
+                                    data-zone="frontieres"
+                                    checked
+                                >
+
+                                🚧 Frontières
+
+                            </label>
+
+                        </div>
+
+                    </div>
+
+                </div>
+            `;
+
+
+            L.DomEvent.disableClickPropagation(container);
+            L.DomEvent.disableScrollPropagation(container);
+
+            return container;
+        }
+    });
+
+
+    map.addControl(
+        new FiltersControl()
+    );
+
+
+    /* =========================
+       OUVRIR / FERMER LE PANEL
+    ========================= */
+
+    document
+        .getElementById("filtersButton")
+        .addEventListener(
+            "click",
+            function () {
+
+                document
+                    .getElementById("filtersPanel")
+                    .classList
+                    .toggle("hidden");
+            }
+        );
+
+
+    /* =========================
+       FILTRES PAR ZONE
+    ========================= */
+
+    const checkboxes =
+        document.querySelectorAll(
+            "[data-zone]"
+        );
+
+
+    checkboxes.forEach(
+        function (checkbox) {
+
+            checkbox.addEventListener(
+                "change",
+                function () {
+
+                    const zone =
+                        this.dataset.zone;
+
+
+                    if (this.checked) {
+
+                        groupes[zone]
+                            .addTo(map);
+
+                    } else {
+
+                        map.removeLayer(
+                            groupes[zone]
+                        );
+
+                    }
+
+
+                    verifierTous();
+
+                }
+            );
+
+        }
+    );
+
+
+    /* =========================
+       TOUS LES 10-20
+    ========================= */
+
+    document
+        .getElementById("allZones")
+        .addEventListener(
+            "change",
+            function () {
+
+                const actif =
+                    this.checked;
+
+
+                checkboxes.forEach(
+                    function (checkbox) {
+
+                        checkbox.checked =
+                            actif;
+
+
+                        const zone =
+                            checkbox.dataset.zone;
+
+
+                        if (actif) {
+
+                            groupes[zone]
+                                .addTo(map);
+
+                        } else {
+
+                            map.removeLayer(
+                                groupes[zone]
+                            );
+
+                        }
+
+                    }
+                );
+
+            }
+        );
+
+
+    /* =========================
+       SYNCHRONISATION
+       "TOUS LES 10-20"
+    ========================= */
+
+    function verifierTous() {
+
+        const tousActifs =
+            [...checkboxes].every(
+                checkbox =>
+                    checkbox.checked
+            );
+
+
+        document
+            .getElementById("allZones")
+            .checked =
+            tousActifs;
+    }
+
+
+    /* =========================
+       FONCTION POUR AJOUTER
+       LES 10-20 PLUS TARD
+    ========================= */
+
+    function ajouter1020(
+        nom,
+        y,
+        x,
+        zone
+    ) {
+
+        const marker =
+            L.marker([y, x]);
+
+
+        marker.bindPopup(
+            "<b>" + nom + "</b>"
+        );
+
+
+        marker.addTo(
+            groupes[zone]
+        );
+
+
+        return marker;
+    }
+
 </script>
 
 </body>
