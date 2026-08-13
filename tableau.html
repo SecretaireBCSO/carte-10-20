@@ -1,362 +1,536 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>Tableau tactique BCSO</title>
+<title>Tableau tactique BCSO</title>
 
-    <link
-        rel="stylesheet"
-        href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-    >
+<link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+>
 
-    <style>
-        * {
-            box-sizing: border-box;
-        }
+<style>
 
-        html,
-        body {
-            margin: 0;
-            width: 100%;
-            height: 100%;
-            overflow: hidden;
-            font-family: Arial, sans-serif;
-            background: #2468A8;
-        }
+* {
+    box-sizing: border-box;
+}
 
-        #map {
-            width: 100%;
-            height: 100%;
-        }
+html,
+body {
+    margin: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
 
-        .leaflet-container {
-            background: #2468A8;
-        }
+    font-family: Arial, sans-serif;
 
-        .leaflet-container.mode-dessin {
-            cursor: crosshair !important;
-        }
+    background: #2468A8;
+}
 
-        .leaflet-container.mode-gomme {
-            cursor: not-allowed !important;
-        }
+#map {
+    width: 100%;
+    height: 100%;
+}
 
+.leaflet-container {
+    background: #2468A8;
+}
 
-        /* ==========================================
-           TITRE / LOGO
-        ========================================== */
+.leaflet-container.mode-dessin {
+    cursor: crosshair !important;
+}
 
-        .header {
-            position: absolute;
-            z-index: 1200;
+.leaflet-container.mode-gomme {
+    cursor: not-allowed !important;
+}
 
-            top: 12px;
-            left: 62px;
+.leaflet-container.mode-selection {
+    cursor: default !important;
+}
 
-            display: flex;
-            align-items: center;
-            gap: 10px;
 
-            padding: 8px 12px;
+/* =================================================
+   EN-TÊTE
+   ================================================= */
 
-            background: rgba(17, 30, 48, 0.96);
-            color: white;
+.header {
 
-            border: 1px solid rgba(255,255,255,0.15);
-            border-radius: 12px;
+    position: absolute;
+    z-index: 1200;
 
-            box-shadow: 0 5px 18px rgba(0,0,0,0.3);
-        }
+    top: 12px;
+    left: 62px;
 
-        .header img {
-            width: 40px;
-            height: 40px;
-            object-fit: contain;
-        }
+    display: flex;
+    align-items: center;
 
-        .header-title {
-            font-size: 14px;
-            font-weight: bold;
-        }
+    gap: 10px;
 
-        .header-subtitle {
-            margin-top: 2px;
+    padding: 8px 12px;
 
-            font-size: 10px;
+    background: rgba(17, 30, 48, 0.96);
 
-            color: #a9bfd3;
-        }
+    color: white;
 
+    border:
+        1px solid
+        rgba(255,255,255,0.15);
 
-        /* ==========================================
-           ÉTAT FIREBASE
-        ========================================== */
+    border-radius: 12px;
 
-        .status {
-            position: absolute;
-            z-index: 1200;
+    box-shadow:
+        0 5px 18px
+        rgba(0,0,0,0.3);
+}
 
-            top: 12px;
-            right: 12px;
 
-            display: flex;
-            align-items: center;
-            gap: 8px;
+.header img {
 
-            padding: 9px 12px;
+    width: 40px;
+    height: 40px;
 
-            background: rgba(17, 30, 48, 0.96);
-            color: white;
+    object-fit: contain;
+}
 
-            border-radius: 10px;
-            border: 1px solid rgba(255,255,255,0.15);
 
-            font-size: 11px;
-        }
+.header-title {
 
-        .status-dot {
-            width: 9px;
-            height: 9px;
+    font-size: 14px;
 
-            border-radius: 50%;
+    font-weight: bold;
+}
 
-            background: #e0a43c;
-        }
 
-        .status-dot.online {
-            background: #40c96b;
-        }
+.header-subtitle {
 
-        .status-dot.offline {
-            background: #e34c4c;
-        }
+    margin-top: 2px;
 
+    font-size: 10px;
 
-        /* ==========================================
-           SESSION
-        ========================================== */
+    color: #a9bfd3;
+}
 
-        .session {
-            position: absolute;
-            z-index: 1200;
 
-            top: 65px;
-            right: 12px;
+/* =================================================
+   ÉTAT
+   ================================================= */
 
-            width: 250px;
+.status {
 
-            padding: 10px;
+    position: absolute;
+    z-index: 1200;
 
-            background: rgba(17, 30, 48, 0.96);
-            color: white;
+    top: 12px;
+    right: 12px;
 
-            border-radius: 10px;
-            border: 1px solid rgba(255,255,255,0.15);
-        }
+    display: flex;
+    align-items: center;
 
-        .session-title {
-            margin-bottom: 7px;
+    gap: 8px;
 
-            font-size: 11px;
-            font-weight: bold;
-        }
+    padding: 9px 12px;
 
-        .session-row {
-            display: flex;
-            gap: 6px;
-        }
+    background:
+        rgba(17, 30, 48, 0.96);
 
-        .session input {
-            width: 100%;
-            min-width: 0;
+    color: white;
 
-            padding: 8px;
+    border-radius: 10px;
 
-            color: white;
-            background: rgba(255,255,255,0.08);
+    border:
+        1px solid
+        rgba(255,255,255,0.15);
 
-            border: 1px solid rgba(255,255,255,0.15);
-            border-radius: 7px;
+    font-size: 11px;
+}
 
-            outline: none;
-        }
 
+.status-dot {
 
-        /* ==========================================
-           BARRE D'OUTILS
-        ========================================== */
+    width: 9px;
+    height: 9px;
 
-        .toolbar {
-            position: absolute;
-            z-index: 1200;
+    border-radius: 50%;
 
-            left: 50%;
-            bottom: 15px;
+    background: #e0a43c;
+}
 
-            transform: translateX(-50%);
 
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            align-items: center;
+.status-dot.online {
+    background: #40c96b;
+}
 
-            gap: 7px;
 
-            max-width: calc(100% - 30px);
+.status-dot.offline {
+    background: #e34c4c;
+}
 
-            padding: 10px;
 
-            background: rgba(17, 30, 48, 0.96);
+/* =================================================
+   OPÉRATIONS
+   ================================================= */
 
-            border: 1px solid rgba(255,255,255,0.15);
-            border-radius: 13px;
+.session {
 
-            box-shadow: 0 7px 25px rgba(0,0,0,0.4);
-        }
+    position: absolute;
+    z-index: 1200;
 
-        .tool-button,
-        .action-button,
-        select {
-            min-height: 38px;
+    top: 65px;
+    right: 12px;
 
-            padding: 8px 10px;
+    width: 290px;
 
-            color: white;
-            background: rgba(255,255,255,0.07);
+    padding: 10px;
 
-            border: 1px solid rgba(255,255,255,0.15);
-            border-radius: 8px;
+    background:
+        rgba(17, 30, 48, 0.96);
 
-            cursor: pointer;
+    color: white;
 
-            font-size: 12px;
-        }
+    border-radius: 10px;
 
-        select option {
-            color: black;
-        }
+    border:
+        1px solid
+        rgba(255,255,255,0.15);
 
-        .tool-button:hover,
-        .action-button:hover {
-            background: rgba(255,255,255,0.15);
-        }
+    box-shadow:
+        0 5px 18px
+        rgba(0,0,0,0.25);
+}
 
-        .tool-button.active {
-            background: #347fc1;
-        }
 
-        .danger {
-            border-color: rgba(255,70,70,0.7);
-            background: rgba(200,50,50,0.2);
-        }
+.session-title {
 
-        .danger:hover {
-            background: rgba(200,50,50,0.45);
-        }
+    margin-bottom: 7px;
 
-        .separator {
-            width: 1px;
-            height: 30px;
+    font-size: 11px;
 
-            margin: 0 3px;
+    font-weight: bold;
+}
 
-            background: rgba(255,255,255,0.15);
-        }
 
+.session-row {
 
-        /* ==========================================
-           COULEUR
-        ========================================== */
+    display: flex;
 
-        #colorPicker {
-            width: 40px;
-            height: 38px;
+    gap: 6px;
 
-            padding: 3px;
+    margin-top: 6px;
+}
 
-            background: rgba(255,255,255,0.08);
 
-            border: 1px solid rgba(255,255,255,0.15);
-            border-radius: 8px;
+.session select,
+.session input {
 
-            cursor: pointer;
-        }
+    width: 100%;
 
+    min-width: 0;
 
-        /* ==========================================
-           ÉPAISSEUR
-        ========================================== */
+    padding: 8px;
 
-        .size-box {
-            display: flex;
-            align-items: center;
-            gap: 7px;
+    color: white;
 
-            color: white;
+    background:
+        rgba(255,255,255,0.08);
 
-            font-size: 11px;
-        }
+    border:
+        1px solid
+        rgba(255,255,255,0.15);
 
-        #sizeRange {
-            width: 100px;
-        }
+    border-radius: 7px;
 
+    outline: none;
+}
 
-        /* ==========================================
-           TEXTE SUR CARTE
-        ========================================== */
 
-        .map-text {
-            white-space: nowrap;
+.session select option {
+    color: black;
+}
 
-            font-family: Arial, sans-serif;
-            font-weight: bold;
 
-            text-shadow:
-                -1px -1px 0 black,
-                 1px -1px 0 black,
-                -1px  1px 0 black,
-                 1px  1px 0 black;
-        }
+.tiny-btn {
 
+    padding: 7px 9px;
 
-        /* ==========================================
-           FLÈCHE
-        ========================================== */
+    color: white;
 
-        .arrow-head {
-            width: 0;
-            height: 0;
+    background:
+        rgba(255,255,255,0.08);
 
-            border-top: 8px solid transparent;
-            border-bottom: 8px solid transparent;
-            border-left: 16px solid currentColor;
-        }
+    border:
+        1px solid
+        rgba(255,255,255,0.15);
 
+    border-radius: 7px;
 
-        /* ==========================================
-           MOBILE
-        ========================================== */
+    cursor: pointer;
 
-        @media (max-width: 900px) {
+    white-space: nowrap;
+}
 
-            .toolbar {
-                left: 8px;
-                right: 8px;
 
-                width: auto;
+.tiny-btn:hover {
 
-                transform: none;
-            }
+    background:
+        rgba(255,255,255,0.15);
+}
 
-            .session {
-                width: 210px;
-            }
 
-        }
-    </style>
+.tiny-btn.danger {
+
+    border-color:
+        rgba(255,70,70,0.55);
+
+    background:
+        rgba(200,50,50,0.18);
+}
+
+
+/* =================================================
+   BARRE D'OUTILS
+   ================================================= */
+
+.toolbar {
+
+    position: absolute;
+
+    z-index: 1200;
+
+    left: 50%;
+    bottom: 15px;
+
+    transform:
+        translateX(-50%);
+
+    display: flex;
+
+    flex-wrap: wrap;
+
+    justify-content: center;
+
+    align-items: center;
+
+    gap: 7px;
+
+    max-width:
+        calc(100% - 30px);
+
+    padding: 10px;
+
+    background:
+        rgba(17, 30, 48, 0.96);
+
+    border:
+        1px solid
+        rgba(255,255,255,0.15);
+
+    border-radius: 13px;
+
+    box-shadow:
+        0 7px 25px
+        rgba(0,0,0,0.4);
+}
+
+
+.tool-button,
+.action-button,
+.toolbar select {
+
+    min-height: 38px;
+
+    padding: 8px 10px;
+
+    color: white;
+
+    background:
+        rgba(255,255,255,0.07);
+
+    border:
+        1px solid
+        rgba(255,255,255,0.15);
+
+    border-radius: 8px;
+
+    cursor: pointer;
+
+    font-size: 12px;
+}
+
+
+.toolbar select option {
+    color: black;
+}
+
+
+.tool-button:hover,
+.action-button:hover {
+
+    background:
+        rgba(255,255,255,0.15);
+}
+
+
+.tool-button.active {
+
+    background: #347fc1;
+}
+
+
+.danger {
+
+    border-color:
+        rgba(255,70,70,0.7);
+
+    background:
+        rgba(200,50,50,0.2);
+}
+
+
+.danger:hover {
+
+    background:
+        rgba(200,50,50,0.45);
+}
+
+
+.separator {
+
+    width: 1px;
+    height: 30px;
+
+    margin: 0 3px;
+
+    background:
+        rgba(255,255,255,0.15);
+}
+
+
+#colorPicker {
+
+    width: 40px;
+    height: 38px;
+
+    padding: 3px;
+
+    background:
+        rgba(255,255,255,0.08);
+
+    border:
+        1px solid
+        rgba(255,255,255,0.15);
+
+    border-radius: 8px;
+
+    cursor: pointer;
+}
+
+
+.size-box {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 7px;
+
+    color: white;
+
+    font-size: 11px;
+}
+
+
+#sizeRange {
+    width: 100px;
+}
+
+
+/* =================================================
+   TEXTE SUR LA CARTE
+   ================================================= */
+
+.map-text {
+
+    white-space: nowrap;
+
+    font-family:
+        Arial,
+        sans-serif;
+
+    font-weight: bold;
+
+    text-shadow:
+        -1px -1px 0 black,
+         1px -1px 0 black,
+        -1px  1px 0 black,
+         1px  1px 0 black,
+         0 2px 4px
+         rgba(0,0,0,0.75);
+
+    transform:
+        translate(
+            -50%,
+            -50%
+        );
+
+    user-select: none;
+}
+
+
+/* =================================================
+   AIDE SÉLECTION
+   ================================================= */
+
+.selected-hint {
+
+    position: absolute;
+
+    z-index: 1200;
+
+    left: 12px;
+    bottom: 15px;
+
+    padding: 8px 10px;
+
+    background:
+        rgba(17,30,48,0.96);
+
+    color: #a9bfd3;
+
+    border:
+        1px solid
+        rgba(255,255,255,0.15);
+
+    border-radius: 9px;
+
+    font-size: 10px;
+}
+
+
+@media (max-width: 900px) {
+
+    .toolbar {
+
+        left: 8px;
+        right: 8px;
+
+        width: auto;
+
+        transform: none;
+    }
+
+    .session {
+        width: 230px;
+    }
+
+    .selected-hint {
+        display: none;
+    }
+
+}
+
+</style>
 </head>
 
 
@@ -371,7 +545,9 @@
     <img
         src="bcso.png"
         alt="BCSO"
-        onerror="this.style.display='none'"
+        onerror="
+            this.style.display='none'
+        "
     >
 
     <div>
@@ -403,31 +579,75 @@
 </div>
 
 
+
+<!-- ===============================================
+     GESTION DES OPÉRATIONS
+     =============================================== -->
+
 <div class="session">
 
     <div class="session-title">
-        Session / opération
+        Opérations
     </div>
+
+
+    <div class="session-row">
+
+        <select id="operationSelect">
+        </select>
+
+        <button
+            id="deleteOperation"
+            class="tiny-btn danger"
+            type="button"
+        >
+            Suppr.
+        </button>
+
+    </div>
+
 
     <div class="session-row">
 
         <input
-            id="roomInput"
-            value="operation-nord"
+            id="newOperation"
             maxlength="40"
+            placeholder="Nom nouvelle opération"
         >
 
         <button
-            id="roomButton"
-            class="action-button"
+            id="createOperation"
+            class="tiny-btn"
+            type="button"
         >
-            OK
+            Créer
+        </button>
+
+    </div>
+
+
+    <div class="session-row">
+
+        <button
+            id="copyOperationLink"
+            class="tiny-btn"
+            type="button"
+            style="
+                width:100%;
+            "
+        >
+            Copier le lien de cette opération
         </button>
 
     </div>
 
 </div>
 
+
+
+<!-- ===============================================
+     BARRE D'OUTILS
+     =============================================== -->
 
 <div class="toolbar">
 
@@ -437,6 +657,14 @@
         data-tool="navigate"
     >
         👆 Navigation
+    </button>
+
+
+    <button
+        class="tool-button"
+        data-tool="select"
+    >
+        ✥ Sélection / déplacer
     </button>
 
 
@@ -510,7 +738,7 @@
             id="sizeRange"
             type="range"
             min="2"
-            max="20"
+            max="24"
             value="6"
         >
 
@@ -567,6 +795,17 @@
 </div>
 
 
+<div class="selected-hint">
+
+    ✥ Sélection / déplacer :
+    clique puis fais glisser
+    un texte, une ligne,
+    une flèche, un cercle
+    ou un dessin.
+
+</div>
+
+
 
 <script
     src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
@@ -577,17 +816,15 @@
 
 
 /* =================================================
-   CONFIGURATION FIREBASE
+   FIREBASE
 
-   NE TOUCHE PAS À ÇA POUR L'INSTANT.
-
-   On remplacera les valeurs ensemble après.
+   NE MODIFIE PAS ENCORE.
    ================================================= */
-
 
 const firebaseConfig = {
 
-    apiKey: "REMPLACE_MOI",
+    apiKey:
+        "REMPLACE_MOI",
 
     authDomain:
         "REMPLACE_MOI.firebaseapp.com",
@@ -609,11 +846,6 @@ const firebaseConfig = {
 
 };
 
-
-
-/* =================================================
-   FIREBASE
-   ================================================= */
 
 
 import {
@@ -639,7 +871,8 @@ import {
     remove,
     onChildAdded,
     onChildChanged,
-    onChildRemoved
+    onChildRemoved,
+    onValue
 }
 from
 "https://www.gstatic.com/firebasejs/12.16.0/firebase-database.js";
@@ -650,25 +883,25 @@ from
    CARTE
    ================================================= */
 
+const map =
+    L.map(
+        "map",
+        {
 
-const map = L.map(
-    "map",
-    {
+            crs:
+                L.CRS.Simple,
 
-        crs:
-            L.CRS.Simple,
+            minZoom:
+                -2,
 
-        minZoom:
-            -2,
+            maxZoom:
+                4,
 
-        maxZoom:
-            4,
+            doubleClickZoom:
+                false
 
-        doubleClickZoom:
-            false
-
-    }
-);
+        }
+    );
 
 
 const largeur = 1280;
@@ -686,9 +919,8 @@ const bounds = [
 
 
 /* =================================================
-   FONDS DE CARTE
+   FONDS
    ================================================= */
-
 
 const fonds = {
 
@@ -723,12 +955,17 @@ let fondActuel =
     fonds.carte;
 
 
-fondActuel.addTo(map);
+fondActuel
+    .addTo(map);
 
-fondActuel.bringToBack();
 
-map.fitBounds(bounds);
+fondActuel
+    .bringToBack();
 
+
+map.fitBounds(
+    bounds
+);
 
 
 document
@@ -743,13 +980,16 @@ document
                 fondActuel
             );
 
+
             fondActuel =
                 fonds[
                     this.value
                 ];
 
+
             fondActuel
                 .addTo(map);
+
 
             fondActuel
                 .bringToBack();
@@ -763,142 +1003,606 @@ document
    ÉTAT
    ================================================= */
 
+const state = {
 
-let outil =
-    "navigate";
+    tool:
+        "navigate",
+
+    color:
+        "#ff3030",
+
+    weight:
+        6,
+
+    drawing:
+        false,
+
+    currentId:
+        null,
+
+    currentItem:
+        null,
+
+    firebaseReady:
+        false,
+
+    database:
+        null,
+
+    itemsRef:
+        null,
+
+    operationsRef:
+        null,
+
+    userId:
+        "local-"
+        +
+        Math.random()
+            .toString(36)
+            .slice(2),
+
+    room:
+        "",
+
+    layers:
+        new Map(),
+
+    data:
+        new Map(),
+
+    localData:
+        {},
+
+    ownHistory:
+        [],
+
+    moving:
+        false,
+
+    moveId:
+        null,
+
+    moveStart:
+        null,
+
+    moveBase:
+        null
+
+};
 
 
-let couleur =
-    "#ff3030";
-
-
-let epaisseur =
-    6;
-
-
-let dessinEnCours =
-    false;
-
-
-let idCourant =
-    null;
-
-
-let objetCourant =
-    null;
-
-
-let debut =
-    null;
-
-
-let firebaseActif =
-    false;
-
-
-let database =
-    null;
-
-
-let dessinsRef =
-    null;
-
-
-const layers =
-    new Map();
-
-
-const dataDessins =
-    new Map();
-
-
-const historique =
-    [];
+const mapEl =
+    document
+        .getElementById(
+            "map"
+        );
 
 
 
 /* =================================================
-   SESSION
+   OPÉRATIONS
    ================================================= */
 
-
-function nettoyerSession(
-    texte
+function cleanRoom(
+    value
 ) {
 
     return (
-        texte
-            .trim()
-            .toLowerCase()
-            .replace(
-                /[^a-z0-9_-]/g,
-                "-"
-            )
-            .slice(
-                0,
-                40
-            )
+        value
         ||
+        ""
+    )
+    .trim()
+    .toLowerCase()
+    .normalize(
+        "NFD"
+    )
+    .replace(
+        /[\u0300-\u036f]/g,
+        ""
+    )
+    .replace(
+        /[^a-z0-9_-]+/g,
+        "-"
+    )
+    .replace(
+        /^-+|-+$/g,
+        ""
+    )
+    .slice(
+        0,
+        40
+    )
+    ||
+    "operation-nord";
+
+}
+
+
+
+function roomFromUrl() {
+
+    return cleanRoom(
+
+        new URLSearchParams(
+            location.search
+        )
+        .get(
+            "room"
+        )
+
+        ||
+
         "operation-nord"
+
     );
 
 }
 
 
-const urlParams =
-    new URLSearchParams(
-        window.location.search
-    );
+
+function roomUrl(
+    room = state.room
+) {
+
+    const url =
+        new URL(
+            location.href
+        );
 
 
-let session =
-    nettoyerSession(
-        urlParams.get("room")
-        ||
-        "operation-nord"
-    );
+    url
+        .searchParams
+        .set(
+            "room",
+            room
+        );
 
 
-document
-    .getElementById(
-        "roomInput"
-    )
-    .value =
-    session;
+    return url
+        .toString();
+
+}
 
 
-document
-    .getElementById(
-        "roomButton"
-    )
-    .addEventListener(
-        "click",
-        function() {
 
-            const nouvelle =
-                nettoyerSession(
-                    document
-                        .getElementById(
-                            "roomInput"
-                        )
-                        .value
-                );
+function goRoom(
+    room
+) {
+
+    location.href =
+        roomUrl(
+            cleanRoom(
+                room
+            )
+        );
+
+}
 
 
-            const url =
-                new URL(
-                    window.location.href
-                );
+
+const OPERATIONS_KEY =
+    "bcso-operations-v2";
 
 
-            url.searchParams.set(
-                "room",
-                nouvelle
+
+function localOperations() {
+
+    try {
+
+        return JSON.parse(
+
+            localStorage
+                .getItem(
+                    OPERATIONS_KEY
+                )
+
+            ||
+
+            "[]"
+
+        );
+
+    }
+
+    catch {
+
+        return [];
+
+    }
+
+}
+
+
+
+function saveLocalOperations(
+    operations
+) {
+
+    localStorage
+        .setItem(
+
+            OPERATIONS_KEY,
+
+            JSON.stringify(
+
+                [
+                    ...new Set(
+                        operations
+                    )
+                ]
+
+            )
+
+        );
+
+}
+
+
+
+function renderOperations(
+    operations
+) {
+
+    const select =
+        document
+            .getElementById(
+                "operationSelect"
             );
 
 
-            window.location.href =
-                url.toString();
+    const liste =
+        [
+            ...new Set(
+                [
+                    state.room,
+                    ...operations
+                ]
+            )
+        ]
+        .sort();
+
+
+    select.innerHTML =
+        "";
+
+
+    liste
+        .forEach(
+            function(
+                room
+            ) {
+
+                const option =
+                    document
+                        .createElement(
+                            "option"
+                        );
+
+
+                option.value =
+                    room;
+
+
+                option.textContent =
+                    room;
+
+
+                option.selected =
+                    room
+                    ===
+                    state.room;
+
+
+                select
+                    .appendChild(
+                        option
+                    );
+
+            }
+        );
+
+}
+
+
+
+function ensureLocalOperation(
+    room
+) {
+
+    const operations =
+        localOperations();
+
+
+    if (
+        !operations
+            .includes(
+                room
+            )
+    ) {
+
+        operations.push(
+            room
+        );
+
+
+        saveLocalOperations(
+            operations
+        );
+
+    }
+
+
+    renderOperations(
+        operations
+    );
+
+}
+
+
+
+state.room =
+    roomFromUrl();
+
+
+ensureLocalOperation(
+    state.room
+);
+
+
+
+document
+    .getElementById(
+        "operationSelect"
+    )
+    .addEventListener(
+        "change",
+        function(
+            event
+        ) {
+
+            goRoom(
+                event.target.value
+            );
+
+        }
+    );
+
+
+
+document
+    .getElementById(
+        "createOperation"
+    )
+    .addEventListener(
+        "click",
+        async function() {
+
+            const input =
+                document
+                    .getElementById(
+                        "newOperation"
+                    );
+
+
+            const room =
+                cleanRoom(
+                    input.value
+                );
+
+
+            const operations =
+                localOperations();
+
+
+            if (
+                !operations
+                    .includes(
+                        room
+                    )
+            ) {
+
+                operations.push(
+                    room
+                );
+
+
+                saveLocalOperations(
+                    operations
+                );
+
+            }
+
+
+            if (
+                state.firebaseReady
+                &&
+                state.operationsRef
+            ) {
+
+                await set(
+
+                    ref(
+                        state.operationsRef,
+                        room
+                    ),
+
+                    {
+
+                        name:
+                            room,
+
+                        createdAt:
+                            Date.now()
+
+                    }
+
+                );
+
+            }
+
+
+            goRoom(
+                room
+            );
+
+        }
+    );
+
+
+
+document
+    .getElementById(
+        "newOperation"
+    )
+    .addEventListener(
+        "keydown",
+        function(
+            event
+        ) {
+
+            if (
+                event.key
+                ===
+                "Enter"
+            ) {
+
+                document
+                    .getElementById(
+                        "createOperation"
+                    )
+                    .click();
+
+            }
+
+        }
+    );
+
+
+
+document
+    .getElementById(
+        "deleteOperation"
+    )
+    .addEventListener(
+        "click",
+        async function() {
+
+            const confirmation =
+                confirm(
+                    `Supprimer l'opération "${state.room}" et tous ses dessins ?`
+                );
+
+
+            if (
+                !confirmation
+            ) {
+
+                return;
+
+            }
+
+
+            const operations =
+                localOperations()
+                    .filter(
+                        operation =>
+                            operation
+                            !==
+                            state.room
+                    );
+
+
+            saveLocalOperations(
+                operations
+            );
+
+
+            localStorage
+                .removeItem(
+                    "bcso-tableau-"
+                    +
+                    state.room
+                );
+
+
+            if (
+                state.firebaseReady
+                &&
+                state.database
+            ) {
+
+                await remove(
+
+                    ref(
+                        state.database,
+                        `tableaux/${state.room}`
+                    )
+
+                );
+
+
+                if (
+                    state.operationsRef
+                ) {
+
+                    await remove(
+
+                        ref(
+                            state.operationsRef,
+                            state.room
+                        )
+
+                    );
+
+                }
+
+            }
+
+
+            goRoom(
+                operations[0]
+                ||
+                "operation-nord"
+            );
+
+        }
+    );
+
+
+
+document
+    .getElementById(
+        "copyOperationLink"
+    )
+    .addEventListener(
+        "click",
+        async function() {
+
+            try {
+
+                await navigator
+                    .clipboard
+                    .writeText(
+                        roomUrl()
+                    );
+
+
+                alert(
+                    "Lien copié"
+                );
+
+            }
+
+            catch {
+
+                prompt(
+                    "Copie ce lien :",
+                    roomUrl()
+                );
+
+            }
 
         }
     );
@@ -909,91 +1613,131 @@ document
    OUTILS
    ================================================= */
 
+const toolButtons = [
 
-const boutonsOutils =
-    document
+    ...document
         .querySelectorAll(
             "[data-tool]"
+        )
+
+];
+
+
+
+function setTool(
+    tool
+) {
+
+    state.tool =
+        tool;
+
+
+    toolButtons
+        .forEach(
+            function(
+                button
+            ) {
+
+                button
+                    .classList
+                    .toggle(
+
+                        "active",
+
+                        button
+                            .dataset
+                            .tool
+                        ===
+                        tool
+
+                    );
+
+            }
         );
 
 
-boutonsOutils
-    .forEach(
-        function(bouton) {
+    mapEl
+        .classList
+        .remove(
 
-            bouton
+            "mode-dessin",
+
+            "mode-gomme",
+
+            "mode-selection"
+
+        );
+
+
+    if (
+        tool
+        ===
+        "navigate"
+    ) {
+
+        map
+            .dragging
+            .enable();
+
+    }
+
+    else {
+
+        map
+            .dragging
+            .disable();
+
+
+        mapEl
+            .classList
+            .add(
+
+                tool
+                ===
+                "eraser"
+
+                    ?
+
+                    "mode-gomme"
+
+                    :
+
+                tool
+                ===
+                "select"
+
+                    ?
+
+                    "mode-selection"
+
+                    :
+
+                    "mode-dessin"
+
+            );
+
+    }
+
+}
+
+
+
+toolButtons
+    .forEach(
+        function(
+            button
+        ) {
+
+            button
                 .addEventListener(
                     "click",
                     function() {
 
-                        outil =
-                            this
+                        setTool(
+                            button
                                 .dataset
-                                .tool;
-
-
-                        boutonsOutils
-                            .forEach(
-                                function(b) {
-
-                                    b.classList
-                                        .toggle(
-                                            "active",
-                                            b.dataset.tool
-                                            ===
-                                            outil
-                                        );
-
-                                }
-                            );
-
-
-                        document
-                            .getElementById(
-                                "map"
-                            )
-                            .classList
-                            .remove(
-                                "mode-dessin",
-                                "mode-gomme"
-                            );
-
-
-                        if (
-                            outil
-                            ===
-                            "navigate"
-                        ) {
-
-                            map
-                                .dragging
-                                .enable();
-
-                        }
-
-                        else {
-
-                            map
-                                .dragging
-                                .disable();
-
-
-                            document
-                                .getElementById(
-                                    "map"
-                                )
-                                .classList
-                                .add(
-                                    outil
-                                    ===
-                                    "eraser"
-                                        ?
-                                        "mode-gomme"
-                                        :
-                                        "mode-dessin"
-                                );
-
-                        }
+                                .tool
+                        );
 
                     }
                 );
@@ -1009,10 +1753,12 @@ document
     )
     .addEventListener(
         "input",
-        function() {
+        function(
+            event
+        ) {
 
-            couleur =
-                this.value;
+            state.color =
+                event.target.value;
 
         }
     );
@@ -1025,11 +1771,13 @@ document
     )
     .addEventListener(
         "input",
-        function() {
+        function(
+            event
+        ) {
 
-            epaisseur =
+            state.weight =
                 Number(
-                    this.value
+                    event.target.value
                 );
 
 
@@ -1038,7 +1786,7 @@ document
                     "sizeValue"
                 )
                 .textContent =
-                this.value;
+                event.target.value;
 
         }
     );
@@ -1046,11 +1794,10 @@ document
 
 
 /* =================================================
-   OUTILS UTILITAIRES
+   UTILITAIRES
    ================================================= */
 
-
-function coord(
+function ll(
     latlng
 ) {
 
@@ -1077,7 +1824,8 @@ function coord(
 }
 
 
-function versLatLng(
+
+function toLatLng(
     point
 ) {
 
@@ -1090,16 +1838,62 @@ function versLatLng(
 
 
 
-function nouvelId() {
+function clone(
+    object
+) {
+
+    return JSON.parse(
+        JSON.stringify(
+            object
+        )
+    );
+
+}
+
+
+
+function escapeHtml(
+    text
+) {
+
+    return String(
+        text
+    )
+    .replaceAll(
+        "&",
+        "&amp;"
+    )
+    .replaceAll(
+        "<",
+        "&lt;"
+    )
+    .replaceAll(
+        ">",
+        "&gt;"
+    )
+    .replaceAll(
+        '"',
+        "&quot;"
+    )
+    .replaceAll(
+        "'",
+        "&#039;"
+    );
+
+}
+
+
+
+function newId() {
 
     if (
-        firebaseActif
+        state.firebaseReady
         &&
-        dessinsRef
+        state.itemsRef
     ) {
 
         return push(
-            dessinsRef
+            state.itemsRef
         ).key;
 
     }
@@ -1125,80 +1919,79 @@ function nouvelId() {
    SAUVEGARDE LOCALE
    ================================================= */
 
-
-function cleLocale() {
+function localKey() {
 
     return (
         "bcso-tableau-"
         +
-        session
+        state.room
     );
 
 }
 
 
-function sauvegarderLocal() {
 
-    const objet =
-        Object.fromEntries(
-            dataDessins
-        );
-
+function saveLocal() {
 
     localStorage
         .setItem(
-            cleLocale(),
+
+            localKey(),
+
             JSON.stringify(
-                objet
+                state.localData
             )
+
         );
 
 }
 
 
-function chargerLocal() {
+
+function loadLocal() {
 
     try {
 
-        const contenu =
+        state.localData =
             JSON.parse(
+
                 localStorage
                     .getItem(
-                        cleLocale()
+                        localKey()
                     )
+
                 ||
+
                 "{}"
-            );
 
-
-        Object
-            .entries(
-                contenu
-            )
-            .forEach(
-                function(
-                    [id, objet]
-                ) {
-
-                    afficherObjet(
-                        id,
-                        objet
-                    );
-
-                }
             );
 
     }
 
-    catch (
-        erreur
-    ) {
+    catch {
 
-        console.log(
-            erreur
+        state.localData =
+            {};
+
+    }
+
+
+    Object
+        .entries(
+            state.localData
+        )
+        .forEach(
+            function(
+                [id, item]
+            ) {
+
+                renderItem(
+                    id,
+                    item
+                );
+
+            }
         );
-
-    }
 
 }
 
@@ -1208,42 +2001,52 @@ function chargerLocal() {
    SAUVEGARDE
    ================================================= */
 
-
-async function sauvegarderObjet(
+async function saveItem(
     id,
-    objet
+    item
 ) {
 
-    dataDessins.set(
-        id,
-        objet
-    );
+    state.data
+        .set(
+            id,
+            item
+        );
 
 
     if (
-        firebaseActif
+        state.firebaseReady
         &&
-        dessinsRef
+        state.itemsRef
     ) {
 
         await set(
+
             ref(
-                dessinsRef,
+                state.itemsRef,
                 id
             ),
-            objet
+
+            item
+
         );
 
     }
 
     else {
 
-        afficherObjet(
+        state.localData[
+            id
+        ] =
+            item;
+
+
+        renderItem(
             id,
-            objet
+            item
         );
 
-        sauvegarderLocal();
+
+        saveLocal();
 
     }
 
@@ -1251,32 +2054,77 @@ async function sauvegarderObjet(
 
 
 
-async function supprimerObjet(
+async function liveSave(
+    id,
+    item
+) {
+
+    if (
+        state.firebaseReady
+        &&
+        state.itemsRef
+    ) {
+
+        await set(
+
+            ref(
+                state.itemsRef,
+                id
+            ),
+
+            item
+
+        );
+
+    }
+
+}
+
+
+
+async function deleteItem(
     id
 ) {
 
     if (
-        firebaseActif
+        !id
+    ) {
+
+        return;
+
+    }
+
+
+    if (
+        state.firebaseReady
         &&
-        dessinsRef
+        state.itemsRef
     ) {
 
         await remove(
+
             ref(
-                dessinsRef,
+                state.itemsRef,
                 id
             )
+
         );
 
     }
 
     else {
 
-        retirerAffichage(
+        delete state.localData[
+            id
+        ];
+
+
+        removeRendered(
             id
         );
 
-        sauvegarderLocal();
+
+        saveLocal();
 
     }
 
@@ -1285,18 +2133,18 @@ async function supprimerObjet(
 
 
 /* =================================================
-   RETIRER AFFICHAGE
+   RETIRER UN OBJET
    ================================================= */
 
-
-function retirerAffichage(
+function removeRendered(
     id
 ) {
 
     const layer =
-        layers.get(
-            id
-        );
+        state.layers
+            .get(
+                id
+            );
 
 
     if (
@@ -1307,27 +2155,196 @@ function retirerAffichage(
             layer
         );
 
-        layers.delete(
-            id
-        );
+
+        state.layers
+            .delete(
+                id
+            );
 
     }
 
 
-    dataDessins.delete(
-        id
-    );
+    state.data
+        .delete(
+            id
+        );
 
 }
 
 
 
 /* =================================================
-   GOMME
+   DÉPLACEMENT / SÉLECTION
    ================================================= */
 
+function startMove(
+    id,
+    event
+) {
 
-function ajouterGomme(
+    if (
+        state.tool
+        !==
+        "select"
+    ) {
+
+        return;
+
+    }
+
+
+    const item =
+        state.data
+            .get(
+                id
+            );
+
+
+    if (
+        !item
+    ) {
+
+        return;
+
+    }
+
+
+    L.DomEvent
+        .stopPropagation(
+            event
+        );
+
+
+    state.moving =
+        true;
+
+
+    state.moveId =
+        id;
+
+
+    state.moveStart =
+        ll(
+            event.latlng
+        );
+
+
+    state.moveBase =
+        clone(
+            item
+        );
+
+}
+
+
+
+function translateItem(
+    item,
+    deltaLat,
+    deltaLng
+) {
+
+    const result =
+        clone(
+            item
+        );
+
+
+    function movePair(
+        point
+    ) {
+
+        return [
+
+            Math.round(
+                (
+                    point[0]
+                    +
+                    deltaLat
+                )
+                *
+                10
+            )
+            /
+            10,
+
+            Math.round(
+                (
+                    point[1]
+                    +
+                    deltaLng
+                )
+                *
+                10
+            )
+            /
+            10
+
+        ];
+
+    }
+
+
+    if (
+        result.points
+    ) {
+
+        result.points =
+            result.points
+                .map(
+                    movePair
+                );
+
+    }
+
+
+    if (
+        result.center
+    ) {
+
+        result.center =
+            movePair(
+                result.center
+            );
+
+    }
+
+
+    if (
+        result.edge
+    ) {
+
+        result.edge =
+            movePair(
+                result.edge
+            );
+
+    }
+
+
+    if (
+        result.position
+    ) {
+
+        result.position =
+            movePair(
+                result.position
+            );
+
+    }
+
+
+    return result;
+
+}
+
+
+
+/* =================================================
+   ÉVÉNEMENTS OBJETS
+   ================================================= */
+
+function bindObjectEvents(
     layer,
     id
 ) {
@@ -1335,11 +2352,11 @@ function ajouterGomme(
     layer.on(
         "click",
         async function(
-            evenement
+            event
         ) {
 
             if (
-                outil
+                state.tool
                 !==
                 "eraser"
             ) {
@@ -1351,12 +2368,27 @@ function ajouterGomme(
 
             L.DomEvent
                 .stopPropagation(
-                    evenement
+                    event
                 );
 
 
-            await supprimerObjet(
+            await deleteItem(
                 id
+            );
+
+        }
+    );
+
+
+    layer.on(
+        "mousedown",
+        function(
+            event
+        ) {
+
+            startMove(
+                id,
+                event
             );
 
         }
@@ -1367,27 +2399,66 @@ function ajouterGomme(
 
 
 /* =================================================
-   AFFICHAGE DES FORMES
+   ANGLE FLÈCHE
    ================================================= */
 
-
-function afficherObjet(
-    id,
-    objet
+function arrowAngle(
+    a,
+    b
 ) {
 
-    retirerAffichage(
-        id
-    );
+    const p1 =
+        map.latLngToLayerPoint(
+            a
+        );
 
+
+    const p2 =
+        map.latLngToLayerPoint(
+            b
+        );
+
+
+    return Math.atan2(
+
+        p2.y
+        -
+        p1.y,
+
+        p2.x
+        -
+        p1.x
+
+    )
+    *
+    180
+    /
+    Math.PI;
+
+}
+
+
+
+/* =================================================
+   CRÉATION DES OBJETS VISUELS
+   ================================================= */
+
+function buildLayer(
+    id,
+    item
+) {
 
     const options = {
 
         color:
-            objet.couleur,
+            item.color
+            ||
+            "#ff3030",
 
         weight:
-            objet.epaisseur,
+            item.weight
+            ||
+            6,
 
         opacity:
             0.95,
@@ -1401,37 +2472,43 @@ function afficherObjet(
     };
 
 
-    let layer =
-        null;
-
-
 
     /* CRAYON / LIGNE */
 
     if (
-        objet.type
+        item.type
         ===
         "pencil"
         ||
-        objet.type
+        item.type
         ===
         "line"
     ) {
 
-        layer =
+        const layer =
             L.polyline(
-                objet.points
-                    .map(
-                        versLatLng
-                    ),
+
+                (
+                    item.points
+                    ||
+                    []
+                )
+                .map(
+                    toLatLng
+                ),
+
                 options
+
             );
 
 
-        ajouterGomme(
+        bindObjectEvents(
             layer,
             id
         );
+
+
+        return layer;
 
     }
 
@@ -1439,32 +2516,36 @@ function afficherObjet(
 
     /* FLÈCHE */
 
-    else if (
-        objet.type
+    if (
+        item.type
         ===
         "arrow"
     ) {
 
-        const groupe =
+        const points =
+            (
+                item.points
+                ||
+                []
+            )
+            .map(
+                toLatLng
+            );
+
+
+        const group =
             L.layerGroup();
 
 
-        const points =
-            objet.points
-                .map(
-                    versLatLng
-                );
-
-
-        const ligne =
+        const line =
             L.polyline(
                 points,
                 options
             );
 
 
-        groupe.addLayer(
-            ligne
+        group.addLayer(
+            line
         );
 
 
@@ -1474,41 +2555,51 @@ function afficherObjet(
             2
         ) {
 
-            const a =
-                map
-                    .latLngToLayerPoint(
-                        points[
-                            points.length
-                            -
-                            2
-                        ]
-                    );
+            const end =
+                points[
+                    points.length
+                    -
+                    1
+                ];
 
 
-            const b =
-                map
-                    .latLngToLayerPoint(
-                        points[
-                            points.length
-                            -
-                            1
-                        ]
-                    );
+            const previous =
+                points[
+                    points.length
+                    -
+                    2
+                ];
 
 
             const angle =
-                Math.atan2(
-                    b.y
-                    -
-                    a.y,
-                    b.x
-                    -
-                    a.x
-                )
-                *
-                180
-                /
-                Math.PI;
+                arrowAngle(
+                    previous,
+                    end
+                );
+
+
+            /*
+                La taille de la pointe
+                dépend maintenant de
+                l'épaisseur.
+            */
+
+            const headHeight =
+                Math.max(
+                    16,
+                    options.weight
+                    *
+                    2.7
+                );
+
+
+            const headWidth =
+                Math.max(
+                    22,
+                    options.weight
+                    *
+                    3.4
+                );
 
 
             const icon =
@@ -1520,51 +2611,101 @@ function afficherObjet(
                     html:
                         `
                         <div
-                            class="arrow-head"
                             style="
-                                color:${objet.couleur};
-                                transform:rotate(${angle}deg);
+                                width:0;
+                                height:0;
+
+                                border-top:
+                                ${headHeight / 2}px
+                                solid transparent;
+
+                                border-bottom:
+                                ${headHeight / 2}px
+                                solid transparent;
+
+                                border-left:
+                                ${headWidth}px
+                                solid
+                                ${options.color};
+
+                                transform:
+                                rotate(${angle}deg);
+
+                                transform-origin:
+                                50% 50%;
+
+                                filter:
+                                drop-shadow(
+                                    0 1px 1px
+                                    rgba(0,0,0,0.65)
+                                );
                             "
                         ></div>
                         `,
 
-                    iconSize:
-                        [18,18],
+                    iconSize: [
 
-                    iconAnchor:
-                        [9,9]
+                        headWidth
+                        +
+                        6,
+
+                        headHeight
+                        +
+                        6
+
+                    ],
+
+                    iconAnchor: [
+
+                        (
+                            headWidth
+                            +
+                            6
+                        )
+                        /
+                        2,
+
+                        (
+                            headHeight
+                            +
+                            6
+                        )
+                        /
+                        2
+
+                    ]
 
                 });
 
 
-            groupe
-                .addLayer(
+            group.addLayer(
 
-                    L.marker(
-                        points[
-                            points.length
-                            -
-                            1
-                        ],
-                        {
-                            icon:
-                                icon
-                        }
-                    )
+                L.marker(
+                    end,
+                    {
 
-                );
+                        icon:
+                            icon,
+
+                        interactive:
+                            true
+
+                    }
+                )
+
+            );
 
         }
 
 
-        groupe
+        group
             .eachLayer(
                 function(
-                    sousLayer
+                    layer
                 ) {
 
-                    ajouterGomme(
-                        sousLayer,
+                    bindObjectEvents(
+                        layer,
                         id
                     );
 
@@ -1572,8 +2713,7 @@ function afficherObjet(
             );
 
 
-        layer =
-            groupe;
+        return group;
 
     }
 
@@ -1581,40 +2721,36 @@ function afficherObjet(
 
     /* CERCLE */
 
-    else if (
-        objet.type
+    if (
+        item.type
         ===
         "circle"
     ) {
 
-        const centre =
-            versLatLng(
-                objet.centre
+        const center =
+            toLatLng(
+                item.center
             );
 
 
-        const bord =
-            versLatLng(
-                objet.bord
+        const edge =
+            toLatLng(
+                item.edge
             );
 
 
-        const rayon =
-            map.distance(
-                centre,
-                bord
-            );
-
-
-        layer =
+        const layer =
             L.circle(
-                centre,
+                center,
                 {
 
                     ...options,
 
                     radius:
-                        rayon,
+                        map.distance(
+                            center,
+                            edge
+                        ),
 
                     fill:
                         false
@@ -1623,10 +2759,13 @@ function afficherObjet(
             );
 
 
-        ajouterGomme(
+        bindObjectEvents(
             layer,
             id
         );
+
+
+        return layer;
 
     }
 
@@ -1634,8 +2773,8 @@ function afficherObjet(
 
     /* TEXTE */
 
-    else if (
-        objet.type
+    if (
+        item.type
         ===
         "text"
     ) {
@@ -1650,11 +2789,15 @@ function afficherObjet(
                     `
                     <div
                         class="map-text"
+
                         style="
-                            color:${objet.couleur};
-                            font-size:${Math.max(
+                            color:
+                            ${item.color || "#ffffff"};
+
+                            font-size:
+                            ${Math.max(
                                 14,
-                                objet.epaisseur
+                                (item.weight || 6)
                                 *
                                 2
                                 +
@@ -1662,32 +2805,76 @@ function afficherObjet(
                             )}px;
                         "
                     >
-                        ${objet.texte}
+                        ${escapeHtml(
+                            item.text
+                            ||
+                            ""
+                        )}
                     </div>
-                    `
+                    `,
+
+                iconAnchor:
+                    [0,0]
 
             });
 
 
-        layer =
+        const marker =
             L.marker(
-                versLatLng(
-                    objet.position
+
+                toLatLng(
+                    item.position
                 ),
+
                 {
+
                     icon:
-                        icon
+                        icon,
+
+                    interactive:
+                        true
+
                 }
+
             );
 
 
-        ajouterGomme(
-            layer,
+        bindObjectEvents(
+            marker,
             id
         );
 
+
+        return marker;
+
     }
 
+
+    return null;
+
+}
+
+
+
+/* =================================================
+   AFFICHAGE
+   ================================================= */
+
+function renderItem(
+    id,
+    item
+) {
+
+    removeRendered(
+        id
+    );
+
+
+    const layer =
+        buildLayer(
+            id,
+            item
+        );
 
 
     if (
@@ -1704,42 +2891,73 @@ function afficherObjet(
     );
 
 
-    layers.set(
-        id,
-        layer
-    );
+    state.layers
+        .set(
+            id,
+            layer
+        );
 
 
-    dataDessins.set(
-        id,
-        objet
-    );
+    state.data
+        .set(
+            id,
+            item
+        );
 
 }
 
 
 
 /* =================================================
-   DÉBUT DESSIN
+   DESSIN
    ================================================= */
 
+let lastLiveSave =
+    0;
 
-async function debutDessin(
-    evenement
+
+
+function itemBase(
+    type
+) {
+
+    return {
+
+        type:
+            type,
+
+        color:
+            state.color,
+
+        weight:
+            state.weight,
+
+        owner:
+            state.userId,
+
+        createdAt:
+            Date.now()
+
+    };
+
+}
+
+
+
+async function startDrawing(
+    event
 ) {
 
     if (
-        outil
-        ===
-        "navigate"
-        ||
-        outil
-        ===
-        "eraser"
-        ||
-        outil
-        ===
-        "text"
+        [
+            "navigate",
+            "select",
+            "eraser",
+            "text"
+        ]
+        .includes(
+            state.tool
+        )
     ) {
 
         return;
@@ -1747,40 +2965,35 @@ async function debutDessin(
     }
 
 
-    dessinEnCours =
+    state.drawing =
         true;
 
 
-    idCourant =
-        nouvelId();
+    state.currentId =
+        newId();
 
 
-    debut =
-        coord(
-            evenement.latlng
+    const start =
+        ll(
+            event.latlng
         );
 
 
     if (
-        outil
+        state.tool
         ===
         "pencil"
     ) {
 
-        objetCourant = {
+        state.currentItem = {
 
-            type:
-                "pencil",
-
-            couleur:
-                couleur,
-
-            epaisseur:
-                epaisseur,
+            ...itemBase(
+                "pencil"
+            ),
 
             points:
                 [
-                    debut
+                    start
                 ]
 
         };
@@ -1788,31 +3001,26 @@ async function debutDessin(
     }
 
 
-    else if (
-        outil
+    if (
+        state.tool
         ===
         "line"
         ||
-        outil
+        state.tool
         ===
         "arrow"
     ) {
 
-        objetCourant = {
+        state.currentItem = {
 
-            type:
-                outil,
-
-            couleur:
-                couleur,
-
-            epaisseur:
-                epaisseur,
+            ...itemBase(
+                state.tool
+            ),
 
             points:
                 [
-                    debut,
-                    debut
+                    start,
+                    start
                 ]
 
         };
@@ -1820,36 +3028,41 @@ async function debutDessin(
     }
 
 
-    else if (
-        outil
+    if (
+        state.tool
         ===
         "circle"
     ) {
 
-        objetCourant = {
+        state.currentItem = {
 
-            type:
-                "circle",
+            ...itemBase(
+                "circle"
+            ),
 
-            couleur:
-                couleur,
+            center:
+                start,
 
-            epaisseur:
-                epaisseur,
-
-            centre:
-                debut,
-
-            bord:
-                debut
+            edge:
+                start
 
         };
 
     }
 
 
-    historique.push(
-        idCourant
+    state.ownHistory
+        .push(
+            state.currentId
+        );
+
+
+    renderItem(
+
+        state.currentId,
+
+        state.currentItem
+
     );
 
 }
@@ -1857,18 +3070,98 @@ async function debutDessin(
 
 
 /* =================================================
-   DESSIN EN COURS
+   MOUVEMENT SOURIS
    ================================================= */
 
-
-function bougerDessin(
-    evenement
+async function moveDrawing(
+    event
 ) {
 
+
+    /* DÉPLACEMENT D'UN OBJET */
+
     if (
-        !dessinEnCours
+        state.moving
+    ) {
+
+        const current =
+            ll(
+                event.latlng
+            );
+
+
+        const deltaLat =
+            current[0]
+            -
+            state.moveStart[0];
+
+
+        const deltaLng =
+            current[1]
+            -
+            state.moveStart[1];
+
+
+        const moved =
+            translateItem(
+
+                state.moveBase,
+
+                deltaLat,
+
+                deltaLng
+
+            );
+
+
+        renderItem(
+
+            state.moveId,
+
+            moved
+
+        );
+
+
+        const now =
+            Date.now();
+
+
+        if (
+            now
+            -
+            lastLiveSave
+            >
+            120
+        ) {
+
+            lastLiveSave =
+                now;
+
+
+            await liveSave(
+
+                state.moveId,
+
+                moved
+
+            );
+
+        }
+
+
+        return;
+
+    }
+
+
+
+    /* DESSIN NORMAL */
+
+    if (
+        !state.drawing
         ||
-        !objetCourant
+        !state.currentItem
     ) {
 
         return;
@@ -1877,76 +3170,194 @@ function bougerDessin(
 
 
     const position =
-        coord(
-            evenement.latlng
+        ll(
+            event.latlng
         );
 
 
     if (
-        objetCourant.type
+        state.currentItem.type
         ===
         "pencil"
     ) {
 
-        objetCourant
-            .points
-            .push(
-                position
-            );
+        const points =
+            state.currentItem
+                .points;
+
+
+        const last =
+            points[
+                points.length
+                -
+                1
+            ];
+
+
+        if (
+            Math.abs(
+                last[0]
+                -
+                position[0]
+            )
+            +
+            Math.abs(
+                last[1]
+                -
+                position[1]
+            )
+            <
+            1
+        ) {
+
+            return;
+
+        }
+
+
+        points.push(
+            position
+        );
 
     }
 
 
-    else if (
-        objetCourant.type
+
+    if (
+        state.currentItem.type
         ===
         "line"
         ||
-        objetCourant.type
+        state.currentItem.type
         ===
         "arrow"
     ) {
 
-        objetCourant
+        state.currentItem
             .points[1] =
             position;
 
     }
 
 
-    else if (
-        objetCourant.type
+
+    if (
+        state.currentItem.type
         ===
         "circle"
     ) {
 
-        objetCourant
-            .bord =
+        state.currentItem
+            .edge =
             position;
 
     }
 
 
-    afficherObjet(
-        idCourant,
-        objetCourant
+
+    renderItem(
+
+        state.currentId,
+
+        state.currentItem
+
     );
+
+
+    const now =
+        Date.now();
+
+
+    if (
+        now
+        -
+        lastLiveSave
+        >
+        120
+    ) {
+
+        lastLiveSave =
+            now;
+
+
+        await liveSave(
+
+            state.currentId,
+
+            state.currentItem
+
+        );
+
+    }
 
 }
 
 
 
 /* =================================================
-   FIN DESSIN
+   FIN INTERACTION
    ================================================= */
 
+async function finishInteraction() {
 
-async function finDessin() {
+
+    /* FIN DÉPLACEMENT */
 
     if (
-        !dessinEnCours
+        state.moving
+    ) {
+
+        const id =
+            state.moveId;
+
+
+        const item =
+            state.data
+                .get(
+                    id
+                );
+
+
+        state.moving =
+            false;
+
+
+        state.moveId =
+            null;
+
+
+        state.moveStart =
+            null;
+
+
+        state.moveBase =
+            null;
+
+
+        if (
+            item
+        ) {
+
+            await saveItem(
+                id,
+                item
+            );
+
+        }
+
+
+        return;
+
+    }
+
+
+
+    /* FIN DESSIN */
+
+    if (
+        !state.drawing
         ||
-        !objetCourant
+        !state.currentItem
     ) {
 
         return;
@@ -1954,25 +3365,24 @@ async function finDessin() {
     }
 
 
-    dessinEnCours =
+    state.drawing =
         false;
 
 
-    await sauvegarderObjet(
-        idCourant,
-        objetCourant
+    await saveItem(
+
+        state.currentId,
+
+        state.currentItem
+
     );
 
 
-    idCourant =
+    state.currentId =
         null;
 
 
-    objetCourant =
-        null;
-
-
-    debut =
+    state.currentItem =
         null;
 
 }
@@ -1981,19 +3391,25 @@ async function finDessin() {
 
 map.on(
     "mousedown",
-    debutDessin
+    startDrawing
 );
 
 
 map.on(
     "mousemove",
-    bougerDessin
+    moveDrawing
 );
 
 
 map.on(
     "mouseup",
-    finDessin
+    finishInteraction
+);
+
+
+map.on(
+    "mouseout",
+    finishInteraction
 );
 
 
@@ -2002,15 +3418,14 @@ map.on(
    TEXTE
    ================================================= */
 
-
 map.on(
     "click",
     async function(
-        evenement
+        event
     ) {
 
         if (
-            outil
+            state.tool
             !==
             "text"
         ) {
@@ -2020,16 +3435,16 @@ map.on(
         }
 
 
-        const texte =
+        const text =
             prompt(
                 "Texte à placer :"
             );
 
 
         if (
-            !texte
+            !text
             ||
-            !texte.trim()
+            !text.trim()
         ) {
 
             return;
@@ -2038,44 +3453,40 @@ map.on(
 
 
         const id =
-            nouvelId();
+            newId();
 
 
-        const objet = {
+        const item = {
 
-            type:
-                "text",
+            ...itemBase(
+                "text"
+            ),
 
-            couleur:
-                couleur,
-
-            epaisseur:
-                epaisseur,
-
-            texte:
-                texte
-                    .trim()
-                    .slice(
-                        0,
-                        80
-                    ),
+            text:
+                text
+                .trim()
+                .slice(
+                    0,
+                    80
+                ),
 
             position:
-                coord(
-                    evenement.latlng
+                ll(
+                    event.latlng
                 )
 
         };
 
 
-        historique.push(
-            id
-        );
+        state.ownHistory
+            .push(
+                id
+            );
 
 
-        await sauvegarderObjet(
+        await saveItem(
             id,
-            objet
+            item
         );
 
     }
@@ -2087,7 +3498,6 @@ map.on(
    ANNULER
    ================================================= */
 
-
 document
     .getElementById(
         "undoButton"
@@ -2096,22 +3506,37 @@ document
         "click",
         async function() {
 
-            const id =
-                historique.pop();
-
-
-            if (
-                !id
+            while (
+                state.ownHistory
+                    .length
             ) {
 
-                return;
+                const id =
+                    state.ownHistory
+                        .pop();
+
+
+                if (
+                    state.data
+                        .has(
+                            id
+                        )
+                    ||
+                    state.localData[
+                        id
+                    ]
+                ) {
+
+                    await deleteItem(
+                        id
+                    );
+
+
+                    return;
+
+                }
 
             }
-
-
-            await supprimerObjet(
-                id
-            );
 
         }
     );
@@ -2121,7 +3546,6 @@ document
 /* =================================================
    RESET
    ================================================= */
-
 
 document
     .getElementById(
@@ -2133,7 +3557,7 @@ document
 
             const confirmation =
                 confirm(
-                    "ATTENTION : supprimer TOUS les dessins de cette session ?"
+                    `Supprimer TOUS les dessins de l'opération "${state.room}" ?`
                 );
 
 
@@ -2147,37 +3571,39 @@ document
 
 
             if (
-                firebaseActif
+                state.firebaseReady
                 &&
-                dessinsRef
+                state.itemsRef
             ) {
 
                 await remove(
-                    dessinsRef
+                    state.itemsRef
                 );
 
             }
 
             else {
 
-                Array.from(
-                    layers.keys()
-                )
+                state.localData =
+                    {};
+
+
+                saveLocal();
+
+
+                [
+                    ...state.layers
+                        .keys()
+                ]
                 .forEach(
-                    retirerAffichage
+                    removeRendered
                 );
-
-
-                localStorage
-                    .removeItem(
-                        cleLocale()
-                    );
 
             }
 
 
-            historique.length =
-                0;
+            state.ownHistory =
+                [];
 
         }
     );
@@ -2188,32 +3614,41 @@ document
    FIREBASE
    ================================================= */
 
-
-function firebaseConfigure() {
+function firebaseConfigured() {
 
     return (
+
         firebaseConfig.apiKey
+
         &&
-        !firebaseConfig.apiKey
+
+        !firebaseConfig
+            .apiKey
             .includes(
                 "REMPLACE"
             )
+
+        &&
+
+        firebaseConfig
+            .databaseURL
+
     );
 
 }
 
 
 
-async function demarrerFirebase() {
+async function startFirebase() {
 
-    const statusDot =
+    const dot =
         document
             .getElementById(
                 "statusDot"
             );
 
 
-    const statusText =
+    const text =
         document
             .getElementById(
                 "statusText"
@@ -2224,22 +3659,21 @@ async function demarrerFirebase() {
     /* MODE LOCAL */
 
     if (
-        !firebaseConfigure()
+        !firebaseConfigured()
     ) {
 
-        statusDot
+        dot
             .classList
             .add(
                 "offline"
             );
 
 
-        statusText
-            .textContent =
+        text.textContent =
             "Mode local";
 
 
-        chargerLocal();
+        loadLocal();
 
 
         return;
@@ -2248,7 +3682,7 @@ async function demarrerFirebase() {
 
 
 
-    /* MODE TEMPS RÉEL */
+    /* MODE FIREBASE */
 
     try {
 
@@ -2264,115 +3698,220 @@ async function demarrerFirebase() {
             );
 
 
-        await signInAnonymously(
-            auth
-        );
+        const credential =
+            await signInAnonymously(
+                auth
+            );
 
 
-        database =
+        state.userId =
+            credential.user.uid;
+
+
+        state.database =
             getDatabase(
                 app
             );
 
 
-        dessinsRef =
+        state.itemsRef =
             ref(
-                database,
-                "tableaux/"
-                +
-                session
-                +
-                "/dessins"
+
+                state.database,
+
+                `tableaux/${state.room}/dessins`
+
             );
 
 
-        firebaseActif =
+        state.operationsRef =
+            ref(
+                state.database,
+                "operations"
+            );
+
+
+        state.firebaseReady =
             true;
 
 
-        statusDot
+        dot
             .classList
             .add(
                 "online"
             );
 
 
-        statusText
-            .textContent =
+        text.textContent =
             "Temps réel connecté";
 
 
 
-        onChildAdded(
-            dessinsRef,
+        /*
+            Enregistre automatiquement
+            l'opération actuelle.
+        */
+
+        await set(
+
+            ref(
+                state.operationsRef,
+                state.room
+            ),
+
+            {
+
+                name:
+                    state.room,
+
+                updatedAt:
+                    Date.now()
+
+            }
+
+        );
+
+
+
+        /*
+            Synchronise la liste
+            des opérations.
+        */
+
+        onValue(
+
+            state.operationsRef,
+
             function(
                 snapshot
             ) {
 
-                afficherObjet(
-                    snapshot.key,
-                    snapshot.val()
+                const firebaseOperations =
+                    Object.keys(
+                        snapshot.val()
+                        ||
+                        {}
+                    );
+
+
+                const operations = [
+
+                    ...new Set(
+
+                        [
+
+                            ...localOperations(),
+
+                            ...firebaseOperations,
+
+                            state.room
+
+                        ]
+
+                    )
+
+                ];
+
+
+                saveLocalOperations(
+                    operations
+                );
+
+
+                renderOperations(
+                    operations
                 );
 
             }
+
         );
 
+
+
+        /* DESSINS */
+
+        onChildAdded(
+
+            state.itemsRef,
+
+            function(
+                snapshot
+            ) {
+
+                renderItem(
+
+                    snapshot.key,
+
+                    snapshot.val()
+
+                );
+
+            }
+
+        );
 
 
         onChildChanged(
-            dessinsRef,
+
+            state.itemsRef,
+
             function(
                 snapshot
             ) {
 
-                afficherObjet(
+                renderItem(
+
                     snapshot.key,
+
                     snapshot.val()
+
                 );
 
             }
+
         );
 
 
-
         onChildRemoved(
-            dessinsRef,
+
+            state.itemsRef,
+
             function(
                 snapshot
             ) {
 
-                retirerAffichage(
+                removeRendered(
                     snapshot.key
                 );
 
             }
+
         );
 
     }
 
 
     catch (
-        erreur
+        error
     ) {
 
         console.error(
-            erreur
+            error
         );
 
 
-        statusDot
+        dot
             .classList
             .add(
                 "offline"
             );
 
 
-        statusText
-            .textContent =
+        text.textContent =
             "Firebase non connecté";
 
 
-        chargerLocal();
+        loadLocal();
 
     }
 
@@ -2380,11 +3919,10 @@ async function demarrerFirebase() {
 
 
 
-demarrerFirebase();
+startFirebase();
 
 
 </script>
-
 
 </body>
 </html>
