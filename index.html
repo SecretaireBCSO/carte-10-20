@@ -255,6 +255,41 @@
             transition: 0.15s;
         }
 
+/* =========================
+           BOUTON TABLEAU TACTIQUE
+        ========================= */
+
+        .tableau-link {
+            position: absolute;
+            bottom: 20px;
+            left: 115px;
+            z-index: 1000;
+
+            padding: 12px 16px;
+
+            background: rgba(17, 30, 48, 0.96);
+            color: white;
+
+            border: 1px solid rgba(255,255,255,0.15);
+            border-radius: 10px;
+
+            font-family: Arial, sans-serif;
+            font-size: 13px;
+            font-weight: bold;
+
+            text-decoration: none;
+
+            box-shadow: 0 6px 18px rgba(0,0,0,0.35);
+
+            transition: 0.15s;
+        }
+
+        .tableau-link:hover {
+            background: #347fc1;
+            transform: translateY(-2px);
+        }
+
+        
     </style>
 </head>
 
@@ -267,6 +302,12 @@
     <img src="bcso.png" alt="Logo BCSO">
 </div>
 
+<a
+    href="tableau.html"
+    class="tableau-link"
+>
+    🗺️ Tableau tactique
+</a>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
