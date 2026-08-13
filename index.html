@@ -30,7 +30,6 @@
             background: #2468A8;
         }
 
-
         /* =========================
            PANEL
         ========================= */
@@ -44,8 +43,8 @@
             height: 46px;
 
             display: flex;
-            justify-content: center;
             align-items: center;
+            justify-content: center;
 
             background: rgba(17, 30, 48, 0.96);
             color: white;
@@ -54,22 +53,17 @@
             border-radius: 10px;
 
             font-size: 22px;
-
             cursor: pointer;
 
             box-shadow: 0 4px 16px rgba(0,0,0,0.35);
-
-            transition: 0.2s;
         }
 
         .filters-button:hover {
             background: #244b70;
         }
 
-
         .filters-panel {
-            width: 260px;
-
+            width: 275px;
             margin-top: 8px;
 
             background: rgba(17, 30, 48, 0.97);
@@ -87,7 +81,6 @@
             display: none;
         }
 
-
         .filters-header {
             padding: 14px 16px;
 
@@ -96,7 +89,6 @@
             border-bottom: 1px solid rgba(255,255,255,0.1);
         }
 
-
         .filters-title {
             font-size: 15px;
             font-weight: bold;
@@ -104,17 +96,13 @@
 
         .filters-subtitle {
             margin-top: 3px;
-
             font-size: 11px;
-
             color: #a9bfd3;
         }
-
 
         .filters-list {
             padding: 10px;
         }
-
 
         .filter-item {
             display: flex;
@@ -125,15 +113,12 @@
             border-radius: 7px;
 
             font-size: 13px;
-
             cursor: pointer;
         }
-
 
         .filter-item:hover {
             background: rgba(255,255,255,0.08);
         }
-
 
         .filter-item input {
             width: 16px;
@@ -144,40 +129,30 @@
             cursor: pointer;
         }
 
-
         .filter-all {
             font-weight: bold;
         }
 
-
         .separator {
             height: 1px;
-
             margin: 7px 4px;
 
             background: rgba(255,255,255,0.1);
         }
 
-
-        /* =========================
-           PETITS POINTS COULEUR
-           DANS LE PANEL
-        ========================= */
-
         .legend-dot {
-            width: 10px;
-            height: 10px;
+            width: 11px;
+            height: 11px;
 
             border-radius: 50%;
 
             margin-right: 8px;
 
-            border: 1px solid rgba(255,255,255,0.7);
+            border: 1px solid rgba(255,255,255,0.8);
         }
 
-
         /* =========================
-           MARQUEURS CARTE
+           POINTS SUR LA CARTE
         ========================= */
 
         .map-dot {
@@ -186,38 +161,31 @@
 
             border-radius: 50%;
 
-            border: 1.5px solid #111;
+            border: 2px solid #111;
 
             box-shadow:
-                0 1px 3px rgba(0,0,0,0.7),
-                0 0 4px rgba(255,255,255,0.3);
+                0 1px 4px rgba(0,0,0,0.8),
+                0 0 3px rgba(255,255,255,0.5);
         }
 
-
         /* =========================
-           POPUP
+           POPUP 10-20
         ========================= */
 
         .leaflet-popup-content-wrapper {
             border-radius: 12px;
-
-            box-shadow: 0 5px 20px rgba(0,0,0,0.35);
+            box-shadow: 0 5px 20px rgba(0,0,0,0.4);
         }
-
 
         .leaflet-popup-content {
             margin: 12px;
-
             width: 300px !important;
         }
 
-
         .popup-card {
             text-align: center;
-
             font-family: Arial, sans-serif;
         }
-
 
         .popup-title {
             margin-bottom: 9px;
@@ -228,18 +196,16 @@
             color: #222;
         }
 
-
         .popup-image {
+            display: block;
+
             width: 100%;
             height: 165px;
 
             object-fit: cover;
 
             border-radius: 9px;
-
-            display: block;
         }
-
 
         .popup-zone {
             margin-top: 8px;
@@ -248,148 +214,130 @@
 
             color: #777;
         }
+
+        /* Frontières */
+        .frontiere-row {
+            margin-top: 6px;
+            padding-top: 8px;
+
+            border-top: 1px solid rgba(255,255,255,0.12);
+
+            font-weight: bold;
+        }
     </style>
 </head>
-
 
 <body>
 
 <div id="map"></div>
 
-
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-
 
 <script>
 
-    /* =========================
+    /* =================================================
        CARTE
-    ========================= */
+       ================================================= */
 
     const map = L.map("map", {
-
         crs: L.CRS.Simple,
-
         minZoom: -2,
-
         maxZoom: 4
-
     });
-
 
     const largeur = 1280;
     const hauteur = 1280;
 
-
     const bounds = [
-
         [0, 0],
-
         [hauteur, largeur]
-
     ];
-
 
     L.imageOverlay(
         "carte.png",
         bounds
     ).addTo(map);
 
-
     map.fitBounds(bounds);
 
 
-
-    /* =========================
-       COULEURS DES CATÉGORIES
-    ========================= */
+    /* =================================================
+       CATÉGORIES
+       ================================================= */
 
     const categories = {
 
-        sandyShores: {
-            nom: "Sandy Shores",
-            couleur: "#a000ff"
+        paletoBay: {
+            nom: "Paleto Bay",
+            couleur: "#1685FF"
+        },
+
+        oceanZancudo: {
+            nom: "Ocean Highway / Zancudo",
+            couleur: "#7B2CBF"
+        },
+
+        route68Harmony: {
+            nom: "Route 68 / Harmony",
+            couleur: "#35C759"
+        },
+
+        sandyJoshua: {
+            nom: "Sandy Shores / Joshua Road",
+            couleur: "#FF8C24"
+        },
+
+        grandSenora: {
+            nom: "Grand Senora / Senora Road",
+            couleur: "#FFCA28"
         },
 
         grapeseed: {
             nom: "Grapeseed",
-            couleur: "#32c45b"
+            couleur: "#78D64B"
         },
 
-        harmony: {
-            nom: "Harmony",
-            couleur: "#ffd43b"
+        senoraFreeway: {
+            nom: "Senora Freeway",
+            couleur: "#19C4D8"
         },
 
-        route68: {
-            nom: "Route 68",
-            couleur: "#ff8c24"
-        },
-
-        grandSenora: {
-            nom: "Grand Senora",
-            couleur: "#ff4fa3"
-        },
-
-        paletoBay: {
-            nom: "Paleto Bay",
-            couleur: "#1685ff"
-        },
-
-        montagnes: {
-            nom: "Montagnes / Chiliad",
-            couleur: "#d5d5d5"
-        },
-
-        alamoSea: {
-            nom: "Alamo Sea",
-            couleur: "#22c7e8"
-        },
-
-        zancudo: {
-            nom: "Zancudo / Côte Ouest",
-            couleur: "#18b99a"
+        chiliadNord: {
+            nom: "Mont Chiliad / Nord rural",
+            couleur: "#D5D5D5"
         },
 
         frontieres: {
             nom: "Frontières",
-            couleur: "#ff3030"
+            couleur: "#FF3030"
         }
 
     };
 
 
-
-    /* =========================
-       GROUPES
-    ========================= */
+    /* =================================================
+       GROUPES LEAFLET
+       ================================================= */
 
     const groupes = {};
 
+    Object.keys(categories).forEach(function(zone) {
 
-    Object.keys(categories).forEach(
+        groupes[zone] =
+            L.layerGroup().addTo(map);
 
-        function(zone) {
-
-            groupes[zone] =
-                L.layerGroup().addTo(map);
-
-        }
-
-    );
+    });
 
 
-
-    /* =========================
-       PANEL
-    ========================= */
+    /* =================================================
+       PANEL DES FILTRES
+       ================================================= */
 
     const FiltersControl = L.Control.extend({
 
         options: {
             position: "topright"
         },
-
 
         onAdd: function() {
 
@@ -398,6 +346,41 @@
                     "div",
                     "filters-control"
                 );
+
+            let lignesCategories = "";
+
+            Object.entries(categories)
+                .forEach(function([id, categorie]) {
+
+                    const frontiere =
+                        id === "frontieres"
+                        ? " frontiere-row"
+                        : "";
+
+                    lignesCategories += `
+
+                        <label class="filter-item${frontiere}">
+
+                            <input
+                                type="checkbox"
+                                data-zone="${id}"
+                                checked
+                            >
+
+                            <span
+                                class="legend-dot"
+                                style="
+                                    background:
+                                    ${categorie.couleur}
+                                "
+                            ></span>
+
+                            ${categorie.nom}
+
+                        </label>
+                    `;
+
+                });
 
 
             container.innerHTML = `
@@ -409,7 +392,6 @@
                 >
                     ☰
                 </button>
-
 
                 <div
                     id="filtersPanel"
@@ -428,9 +410,7 @@
 
                     </div>
 
-
                     <div class="filters-list">
-
 
                         <label class="filter-item filter-all">
 
@@ -444,40 +424,13 @@
 
                         </label>
 
-
                         <div class="separator"></div>
 
-
-                        ${Object.entries(categories)
-                            .map(([id, categorie]) => `
-
-                            <label class="filter-item">
-
-                                <input
-                                    type="checkbox"
-                                    data-zone="${id}"
-                                    checked
-                                >
-
-                                <span
-                                    class="legend-dot"
-                                    style="
-                                        background:
-                                        ${categorie.couleur}
-                                    "
-                                ></span>
-
-                                ${categorie.nom}
-
-                            </label>
-
-                        `).join("")}
-
+                        ${lignesCategories}
 
                     </div>
 
                 </div>
-
             `;
 
 
@@ -485,16 +438,12 @@
                 container
             );
 
-
             L.DomEvent.disableScrollPropagation(
                 container
             );
 
-
             return container;
-
         }
-
     });
 
 
@@ -503,10 +452,9 @@
     );
 
 
-
-    /* =========================
-       OUVERTURE PANEL
-    ========================= */
+    /* =================================================
+       OUVRIR / FERMER PANEL
+       ================================================= */
 
     document
         .getElementById("filtersButton")
@@ -523,10 +471,9 @@
         );
 
 
-
-    /* =========================
+    /* =================================================
        FILTRES
-    ========================= */
+       ================================================= */
 
     const checkboxes =
         document.querySelectorAll(
@@ -534,46 +481,38 @@
         );
 
 
-    checkboxes.forEach(
+    checkboxes.forEach(function(checkbox) {
 
-        function(checkbox) {
+        checkbox.addEventListener(
+            "change",
+            function() {
 
-            checkbox.addEventListener(
-                "change",
-                function() {
+                const zone =
+                    this.dataset.zone;
 
-                    const zone =
-                        this.dataset.zone;
+                if (this.checked) {
 
+                    groupes[zone]
+                        .addTo(map);
 
-                    if(this.checked) {
+                } else {
 
+                    map.removeLayer(
                         groupes[zone]
-                            .addTo(map);
-
-                    } else {
-
-                        map.removeLayer(
-                            groupes[zone]
-                        );
-
-                    }
-
-
-                    verifierTous();
+                    );
 
                 }
-            );
 
-        }
+                verifierTous();
+            }
+        );
 
-    );
+    });
 
 
-
-    /* =========================
+    /* =================================================
        TOUS LES 10-20
-    ========================= */
+       ================================================= */
 
     document
         .getElementById("allZones")
@@ -584,20 +523,16 @@
                 const actif =
                     this.checked;
 
-
                 checkboxes.forEach(
-
                     function(checkbox) {
 
                         checkbox.checked =
                             actif;
 
-
                         const zone =
                             checkbox.dataset.zone;
 
-
-                        if(actif) {
+                        if (actif) {
 
                             groupes[zone]
                                 .addTo(map);
@@ -611,37 +546,30 @@
                         }
 
                     }
-
                 );
 
             }
         );
 
 
-
     function verifierTous() {
 
         const tousActifs =
             [...checkboxes].every(
-
                 checkbox =>
                     checkbox.checked
-
             );
-
 
         document
             .getElementById("allZones")
             .checked =
             tousActifs;
-
     }
 
 
-
-    /* =========================
-       CRÉATION D'UN MARQUEUR
-    ========================= */
+    /* =================================================
+       ICÔNE COULEUR
+       ================================================= */
 
     function creerIcone(couleur) {
 
@@ -650,7 +578,6 @@
             className: "",
 
             html: `
-
                 <div
                     class="map-dot"
                     style="
@@ -658,13 +585,10 @@
                         ${couleur}
                     "
                 ></div>
-
             `,
 
             iconSize: [16,16],
-
             iconAnchor: [8,8],
-
             popupAnchor: [0,-8]
 
         });
@@ -672,10 +596,9 @@
     }
 
 
-
-    /* =========================
-       AJOUTER UN 10-20
-    ========================= */
+    /* =================================================
+       AJOUT D'UN 10-20
+       ================================================= */
 
     function ajouter1020(
         nom,
@@ -688,8 +611,7 @@
         const categorie =
             categories[zone];
 
-
-        if(!categorie) {
+        if (!categorie) {
 
             console.error(
                 "Catégorie inconnue :",
@@ -697,37 +619,31 @@
             );
 
             return;
-
         }
 
 
-        const marker = L.marker(
-
-            [y,x],
-
-            {
-                icon:
-                    creerIcone(
-                        categorie.couleur
-                    )
-            }
-
-        );
+        const marker =
+            L.marker(
+                [y,x],
+                {
+                    icon:
+                        creerIcone(
+                            categorie.couleur
+                        )
+                }
+            );
 
 
         let contenuImage = "";
 
-
-        if(image !== "") {
+        if (image !== "") {
 
             contenuImage = `
-
                 <img
                     class="popup-image"
                     src="${image}"
                     alt="${nom}"
                 >
-
             `;
 
         }
@@ -756,176 +672,422 @@
             groupes[zone]
         );
 
-
         return marker;
-
     }
 
 
-/* =================================================
-   MODE PLACEMENT DES 10-20
-   MAJ + CLIC = récupérer les coordonnées
-   ================================================= */
-
-map.on("click", function(e) {
-
-    // Seulement si la touche MAJ est maintenue
-    if (!e.originalEvent.shiftKey) {
-        return;
-    }
-
-    const y = Math.round(e.latlng.lat);
-    const x = Math.round(e.latlng.lng);
-
-    const texte = `Y : ${y} | X : ${x}`;
-
-    // Copie automatiquement les coordonnées
-    navigator.clipboard.writeText(`${y}, ${x}`);
-
-    // Petit message temporaire
-    const info = L.popup({
-        closeButton: false,
-        autoClose: true,
-        className: "coord-popup"
-    })
-    .setLatLng(e.latlng)
-    .setContent(`
-        <div style="
-            text-align:center;
-            font-family:Arial;
-            min-width:150px;
-        ">
-            <b>Coordonnées copiées</b><br>
-            Y : ${y}<br>
-            X : ${x}
-        </div>
-    `)
-    .openOn(map);
-
-    console.log(
-        "10-20 :",
-        "Y =", y,
-        "X =", x
-    );
-});
-
-    
     /* =================================================
-       LES 10-20 SERONT AJOUTÉS ICI PLUS TARD
+       PALETO BAY
        ================================================= */
 
-/* =================================================
-   10-20 - GRAND SENORA
-   ================================================= */
+    ajouter1020(
+        "Scierie",
+        962.8,
+        529,
+        "paletoBay"
+    );
 
-ajouter1020("Ferme aux cochons", 611.8, 579.8, "grandSenora");
-ajouter1020("Mine Abandonnée", 631.2, 526.4, "grandSenora");
-ajouter1020("VPN", 840.3, 846.5, "grandSenora");
-ajouter1020("Hippies", 803.5, 841.4, "grandSenora");
-ajouter1020("Mine", 705.6, 879.2, "grandSenora");
-ajouter1020("Dino Rose", 683.5, 850.7, "grandSenora");
-ajouter1020("Éoliennes", 624.6, 821.7, "grandSenora");
+    ajouter1020(
+        "Téléphérique",
+        987.9,
+        509.8,
+        "paletoBay"
+    );
 
+    ajouter1020(
+        "PDP Paleto",
+        1033.6,
+        540.9,
+        "paletoBay"
+    );
 
-/* =================================================
-   10-20 - HARMONY
-   ================================================= */
+    ajouter1020(
+        "LS Custom Paleto",
+        1095.1,
+        602,
+        "paletoBay"
+    );
 
-ajouter1020("Chapelle", 704, 555.9, "harmony");
+    ajouter1020(
+        "Usine Poulet",
+        1057.1,
+        580.3,
+        "paletoBay"
+    );
 
+    ajouter1020(
+        "La Pointe",
+        1154,
+        594.8,
+        "paletoBay"
+    );
 
-/* =================================================
-   10-20 - ZANCUDO / CÔTE OUEST
-   ================================================= */
-
-ajouter1020("Vigneron", 626.1, 393.8, "zancudo");
-ajouter1020("Totem", 631.2, 425.9, "zancudo");
-ajouter1020("Villa Stark", 610.7, 322.3, "zancudo");
-ajouter1020("Chumash", 526.7, 263.8, "zancudo");
-ajouter1020("Fleeca GOH", 464.7, 284, "zancudo");
-ajouter1020("Pacific Bluffs", 424.2, 278.3, "zancudo");
-ajouter1020("LTD Tongva", 498, 402.6, "zancudo");
-ajouter1020("Cuvette", 574.9, 441.5, "zancudo");
-ajouter1020("Station Essence Zancudo", 654.3, 326.5, "zancudo");
-ajouter1020("Fort Zancudo / Base Militaire", 740.9, 358.6, "zancudo");
-ajouter1020("Hookies", 853.7, 361.7, "zancudo");
-
-
-/* =================================================
-   10-20 - PALETO BAY
-   ================================================= */
-
-ajouter1020("Scierie", 962.8, 529, "paletoBay");
-ajouter1020("Téléphérique", 987.9, 509.8, "paletoBay");
-ajouter1020("PDP Paleto", 1033.6, 540.9, "paletoBay");
-ajouter1020("LS Custom Paleto", 1095.1, 602, "paletoBay");
-ajouter1020("Usine Poulet", 1057.1, 580.3, "paletoBay");
-ajouter1020("La Pointe", 1154, 594.8, "paletoBay");
-ajouter1020("Pops Diner", 1074.6, 764.2, "paletoBay");
-
-
-/* =================================================
-   10-20 - MONTAGNES / CHILIAD
-   ================================================= */
-
-ajouter1020("Nudistes", 920.8, 474.6, "montagnes");
-ajouter1020("Maison Weed", 990, 817, "montagnes");
-ajouter1020("Mont Chiliad", 984.9, 638.3, "montagnes");
-ajouter1020("Phare", 946.9, 941.3, "montagnes");
-ajouter1020("Maison Pêcheur", 873.7, 977.6, "montagnes");
-ajouter1020("Humane Labs", 796.8, 952.2, "montagnes");
+    ajouter1020(
+        "Pops Diner",
+        1074.6,
+        764.2,
+        "paletoBay"
+    );
 
 
-/* =================================================
-   10-20 - GRAPESEED
-   ================================================= */
+    /* =================================================
+       OCEAN HIGHWAY / ZANCUDO
+       ================================================= */
 
-ajouter1020("LTD Grapeseed", 922.4, 762.6, "grapeseed");
-ajouter1020("Pêcherie", 863.4, 726.4, "grapeseed");
-ajouter1020("Aérodrome Grapeseed", 905.4, 798.9, "grapeseed");
-ajouter1020("Ferme O'Neil", 930.5, 837.2, "grapeseed");
-ajouter1020("Silo", 861.9, 885.9, "grapeseed");
+    ajouter1020(
+        "Vigneron",
+        626.1,
+        393.8,
+        "oceanZancudo"
+    );
+
+    ajouter1020(
+        "Totem",
+        631.2,
+        425.9,
+        "oceanZancudo"
+    );
+
+    ajouter1020(
+        "Station Essence Zancudo",
+        654.3,
+        326.5,
+        "oceanZancudo"
+    );
+
+    ajouter1020(
+        "Fort Zancudo / Base Militaire",
+        740.9,
+        358.6,
+        "oceanZancudo"
+    );
+
+    ajouter1020(
+        "Hookies",
+        853.7,
+        361.7,
+        "oceanZancudo"
+    );
 
 
-/* =================================================
-   10-20 - SANDY SHORES
-   ================================================= */
+    /* =================================================
+       ROUTE 68 / HARMONY
+       ================================================= */
 
-ajouter1020("Moulin", 810.6, 779.7, "sandyShores");
-ajouter1020("Motel Sandy", 781.9, 748.6, "sandyShores");
-ajouter1020("PDP Sandy", 793.7, 777.6, "sandyShores");
-ajouter1020("Aéroport Sandy", 749.1, 767.8, "sandyShores");
-ajouter1020("Yellow Jack", 728.6, 793.7, "sandyShores");
-ajouter1020("Casse Avion", 731.7, 833.1, "sandyShores");
+    ajouter1020(
+        "Chapelle",
+        704,
+        555.9,
+        "route68Harmony"
+    );
+
+    ajouter1020(
+        "Ciment",
+        709.1,
+        619.1,
+        "route68Harmony"
+    );
+
+    ajouter1020(
+        "Fleeca Route 68",
+        693.8,
+        709.8,
+        "route68Harmony"
+    );
+
+    ajouter1020(
+        "BolingBroke",
+        679.9,
+        762.6,
+        "route68Harmony"
+    );
+
+    ajouter1020(
+        "Stab City",
+        793.2,
+        594.3,
+        "route68Harmony"
+    );
 
 
-/* =================================================
-   10-20 - ROUTE 68
-   ================================================= */
+    /* =================================================
+       SANDY SHORES / JOSHUA ROAD
+       ================================================= */
 
-ajouter1020("You Tool", 773.2, 868.3, "route68");
-ajouter1020("Ciment", 709.1, 619.1, "route68");
-ajouter1020("Fleeca Route 68", 693.8, 709.8, "route68");
-ajouter1020("BolingBroke", 679.9, 762.6, "route68");
+    ajouter1020(
+        "Moulin",
+        810.6,
+        779.7,
+        "sandyJoshua"
+    );
+
+    ajouter1020(
+        "Motel Sandy",
+        781.9,
+        748.6,
+        "sandyJoshua"
+    );
+
+    ajouter1020(
+        "PDP Sandy",
+        793.7,
+        777.6,
+        "sandyJoshua"
+    );
+
+    ajouter1020(
+        "Aéroport Sandy",
+        749.1,
+        767.8,
+        "sandyJoshua"
+    );
+
+    ajouter1020(
+        "Yellow Jack",
+        728.6,
+        793.7,
+        "sandyJoshua"
+    );
+
+    ajouter1020(
+        "Casse Avion",
+        731.7,
+        833.1,
+        "sandyJoshua"
+    );
 
 
-/* =================================================
-   10-20 - ALAMO SEA
-   ================================================= */
+    /* =================================================
+       GRAND SENORA / SENORA ROAD
+       ================================================= */
 
-ajouter1020("Cactus", 769.6, 622.8, "alamoSea");
-ajouter1020("Stab City", 793.2, 594.3, "alamoSea");
+    ajouter1020(
+        "Ferme aux cochons",
+        611.8,
+        579.8,
+        "grandSenora"
+    );
+
+    ajouter1020(
+        "Mine Abandonnée",
+        631.2,
+        526.4,
+        "grandSenora"
+    );
+
+    ajouter1020(
+        "VPN",
+        840.3,
+        846.5,
+        "grandSenora"
+    );
+
+    ajouter1020(
+        "Hippies",
+        803.5,
+        841.4,
+        "grandSenora"
+    );
+
+    ajouter1020(
+        "Dino Rose",
+        683.5,
+        850.7,
+        "grandSenora"
+    );
+
+    ajouter1020(
+        "Cactus",
+        769.6,
+        622.8,
+        "grandSenora"
+    );
 
 
-/* =================================================
-   10-20 - FRONTIÈRES
-   ================================================= */
+    /* =================================================
+       GRAPESEED
+       ================================================= */
 
-/*
-   On ajoutera ici tes points de frontières,
-   car ceux-ci seront propres à ton serveur.
-*/
+    ajouter1020(
+        "LTD Grapeseed",
+        922.4,
+        762.6,
+        "grapeseed"
+    );
 
+    ajouter1020(
+        "Pêcherie",
+        863.4,
+        726.4,
+        "grapeseed"
+    );
+
+    ajouter1020(
+        "Aérodrome Grapeseed",
+        905.4,
+        798.9,
+        "grapeseed"
+    );
+
+    ajouter1020(
+        "Ferme O'Neil",
+        930.5,
+        837.2,
+        "grapeseed"
+    );
+
+    ajouter1020(
+        "Silo",
+        861.9,
+        885.9,
+        "grapeseed"
+    );
+
+
+    /* =================================================
+       SENORA FREEWAY
+       ================================================= */
+
+    ajouter1020(
+        "You Tool",
+        773.2,
+        868.3,
+        "senoraFreeway"
+    );
+
+    ajouter1020(
+        "Mine",
+        705.6,
+        879.2,
+        "senoraFreeway"
+    );
+
+    ajouter1020(
+        "Éoliennes",
+        624.6,
+        821.7,
+        "senoraFreeway"
+    );
+
+    ajouter1020(
+        "Humane Labs",
+        796.8,
+        952.2,
+        "senoraFreeway"
+    );
+
+
+    /* =================================================
+       MONT CHILIAD / NORD RURAL
+       ================================================= */
+
+    ajouter1020(
+        "Nudistes",
+        920.8,
+        474.6,
+        "chiliadNord"
+    );
+
+    ajouter1020(
+        "Maison Weed",
+        990,
+        817,
+        "chiliadNord"
+    );
+
+    ajouter1020(
+        "Mont Chiliad",
+        984.9,
+        638.3,
+        "chiliadNord"
+    );
+
+    ajouter1020(
+        "Phare",
+        946.9,
+        941.3,
+        "chiliadNord"
+    );
+
+    ajouter1020(
+        "Maison Pêcheur",
+        873.7,
+        977.6,
+        "chiliadNord"
+    );
+
+
+    /* =================================================
+       FRONTIÈRES
+       =================================================
+
+       On les fera ensemble ensuite.
+
+       Exemple :
+
+       ajouter1020(
+           "Frontière Sud",
+           600,
+           500,
+           "frontieres"
+       );
+
+       ================================================= */
+
+
+    /* =================================================
+       MODE PLACEMENT
+
+       MAJ + CLIC = coordonnées
+       ================================================= */
+
+    map.on(
+        "click",
+        function(e) {
+
+            if (!e.originalEvent.shiftKey) {
+                return;
+            }
+
+            const y =
+                Math.round(
+                    e.latlng.lat * 10
+                ) / 10;
+
+            const x =
+                Math.round(
+                    e.latlng.lng * 10
+                ) / 10;
+
+
+            navigator.clipboard
+                .writeText(
+                    `${y}, ${x}`
+                );
+
+
+            L.popup({
+                closeButton: false
+            })
+            .setLatLng(
+                e.latlng
+            )
+            .setContent(`
+                <div style="
+                    text-align:center;
+                    font-family:Arial;
+                ">
+                    <b>Coordonnées copiées</b>
+                    <br><br>
+                    Y : ${y}
+                    <br>
+                    X : ${x}
+                </div>
+            `)
+            .openOn(map);
+
+        }
+    );
 
 </script>
 
