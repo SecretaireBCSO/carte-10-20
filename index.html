@@ -253,12 +253,60 @@
         [hauteur, largeur]
     ];
 
-    L.imageOverlay(
-        "carte.png",
-        bounds
-    ).addTo(map);
+    /* =================================================
+       FONDS DE CARTE
+       ================================================= */
+
+    const fondsCarte = {
+
+        carte: L.imageOverlay(
+            "carte.png",
+            bounds
+        ),
+
+        routes: L.imageOverlay(
+            "routes.png",
+            bounds
+        ),
+
+        atlas: L.imageOverlay(
+            "atlas.png",
+            bounds
+        ),
+
+        satellite: L.imageOverlay(
+            "satellite.png",
+            bounds
+        )
+
+    };
+
+    // Fond affiché au démarrage
+    let fondActuel = fondsCarte.carte;
+
+    fondActuel.addTo(map);
+    fondActuel.bringToBack();
 
     map.fitBounds(bounds);
+
+
+    /* =================================================
+       CHANGEMENT DU FOND
+       ================================================= */
+
+    function changerFond(type) {
+
+        if (!fondsCarte[type]) {
+            return;
+        }
+
+        map.removeLayer(fondActuel);
+
+        fondActuel = fondsCarte[type];
+
+        fondActuel.addTo(map);
+        fondActuel.bringToBack();
+    }
 
 
     /* =================================================
@@ -412,6 +460,55 @@
 
                     <div class="filters-list">
 
+                        <div style="
+                            font-size: 11px;
+                            text-transform: uppercase;
+                            color: #8fa8bd;
+                            font-weight: bold;
+                            margin: 4px 8px 7px 8px;
+                        ">
+                            Fond de carte
+                        </div>
+
+                        <label class="filter-item">
+                            <input
+                                type="radio"
+                                name="mapStyle"
+                                value="carte"
+                                checked
+                            >
+                            🗺️ Carte
+                        </label>
+
+                        <label class="filter-item">
+                            <input
+                                type="radio"
+                                name="mapStyle"
+                                value="routes"
+                            >
+                            🛣️ Routes
+                        </label>
+
+                        <label class="filter-item">
+                            <input
+                                type="radio"
+                                name="mapStyle"
+                                value="atlas"
+                            >
+                            🎨 Atlas
+                        </label>
+
+                        <label class="filter-item">
+                            <input
+                                type="radio"
+                                name="mapStyle"
+                                value="satellite"
+                            >
+                            🛰️ Satellite
+                        </label>
+
+                        <div class="separator"></div>
+
                         <label class="filter-item filter-all">
 
                             <input
@@ -450,6 +547,31 @@
     map.addControl(
         new FiltersControl()
     );
+
+
+    /* =================================================
+       SÉLECTION DU FOND DE CARTE
+       ================================================= */
+
+    const boutonsFond =
+        document.querySelectorAll(
+            'input[name="mapStyle"]'
+        );
+
+    boutonsFond.forEach(function(bouton) {
+
+        bouton.addEventListener(
+            "change",
+            function() {
+
+                changerFond(
+                    this.value
+                );
+
+            }
+        );
+
+    });
 
 
     /* =================================================
