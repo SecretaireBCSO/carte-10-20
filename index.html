@@ -224,12 +224,49 @@
 
             font-weight: bold;
         }
+    
+        /* =========================
+           LOGO BCSO
+        ========================= */
+
+        .bcso-logo {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            z-index: 1000;
+
+            background: rgba(17, 30, 48, 0.92);
+            padding: 8px;
+
+            border-radius: 12px;
+            border: 1px solid rgba(255,255,255,0.15);
+
+            box-shadow: 0 6px 18px rgba(0,0,0,0.35);
+        }
+
+        .bcso-logo img {
+            display: block;
+            width: 72px;
+            height: auto;
+        }
+
+        .bcso-logo:hover {
+            transform: scale(1.03);
+            transition: 0.15s;
+        }
+
     </style>
 </head>
 
 <body>
 
 <div id="map"></div>
+
+
+<div class="bcso-logo">
+    <img src="bcso.png" alt="Logo BCSO">
+</div>
+
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
