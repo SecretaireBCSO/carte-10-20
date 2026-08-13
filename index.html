@@ -306,6 +306,45 @@
 
         fondActuel.addTo(map);
         fondActuel.bringToBack();
+
+        // Sur la carte "Routes", on masque automatiquement tous les 10-20.
+        if (type === "routes") {
+
+            Object.values(groupes).forEach(function(groupe) {
+
+                if (map.hasLayer(groupe)) {
+                    map.removeLayer(groupe);
+                }
+
+            });
+
+        } else {
+
+            // Quand on revient sur une autre carte,
+            // on réaffiche uniquement les catégories cochées.
+            document
+                .querySelectorAll("[data-zone]")
+                .forEach(function(checkbox) {
+
+                    const zone = checkbox.dataset.zone;
+
+                    if (checkbox.checked) {
+
+                        if (!map.hasLayer(groupes[zone])) {
+                            groupes[zone].addTo(map);
+                        }
+
+                    } else {
+
+                        if (map.hasLayer(groupes[zone])) {
+                            map.removeLayer(groupes[zone]);
+                        }
+
+                    }
+
+                });
+
+        }
     }
 
 
@@ -612,7 +651,15 @@
                 const zone =
                     this.dataset.zone;
 
-                if (this.checked) {
+                // Sur le fond "Routes", les 10-20 restent masqués
+                // même si on coche/décoche une catégorie.
+                if (fondActuel === fondsCarte.routes) {
+
+                    if (map.hasLayer(groupes[zone])) {
+                        map.removeLayer(groupes[zone]);
+                    }
+
+                } else if (this.checked) {
 
                     groupes[zone]
                         .addTo(map);
@@ -654,7 +701,14 @@
                         const zone =
                             checkbox.dataset.zone;
 
-                        if (actif) {
+                        // La carte "Routes" reste toujours sans 10-20.
+                        if (fondActuel === fondsCarte.routes) {
+
+                            if (map.hasLayer(groupes[zone])) {
+                                map.removeLayer(groupes[zone]);
+                            }
+
+                        } else if (actif) {
 
                             groupes[zone]
                                 .addTo(map);
