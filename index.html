@@ -762,7 +762,54 @@
     }
 
 
+/* =================================================
+   MODE PLACEMENT DES 10-20
+   MAJ + CLIC = récupérer les coordonnées
+   ================================================= */
 
+map.on("click", function(e) {
+
+    // Seulement si la touche MAJ est maintenue
+    if (!e.originalEvent.shiftKey) {
+        return;
+    }
+
+    const y = Math.round(e.latlng.lat);
+    const x = Math.round(e.latlng.lng);
+
+    const texte = `Y : ${y} | X : ${x}`;
+
+    // Copie automatiquement les coordonnées
+    navigator.clipboard.writeText(`${y}, ${x}`);
+
+    // Petit message temporaire
+    const info = L.popup({
+        closeButton: false,
+        autoClose: true,
+        className: "coord-popup"
+    })
+    .setLatLng(e.latlng)
+    .setContent(`
+        <div style="
+            text-align:center;
+            font-family:Arial;
+            min-width:150px;
+        ">
+            <b>Coordonnées copiées</b><br>
+            Y : ${y}<br>
+            X : ${x}
+        </div>
+    `)
+    .openOn(map);
+
+    console.log(
+        "10-20 :",
+        "Y =", y,
+        "X =", x
+    );
+});
+
+    
     /* =================================================
        LES 10-20 SERONT AJOUTÉS ICI PLUS TARD
        ================================================= */
