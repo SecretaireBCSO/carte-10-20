@@ -1768,91 +1768,195 @@ document
         "click",
         async function() {
 
-    if (
-        !state.canEdit
-    ) {
-        return;
-    }
+            if (
+                !state.canEdit
+            ) {
+                return;
+            }
 
+
+            const roomToDelete =
+                state.room;
+
+
+            const select =
+                document
+                    .getElementById(
+                        "operationSelect"
+                    );
+
+
+            const remainingOperations =
+                [
+                    ...select.options
+                ]
+                .map(
+                    option =>
+                        option.value
+                )
+                .filter(
+                    room =>
+                        room
+                        !==
+                        roomToDelete
+                );
+
+
+            /*
+                S'il n'y a plus aucune autre opération,
+                on prépare une opération vide de secours.
+            */
+
+            const nextRoom =
+                remainingOperations[0]
+                ||
+                (
+                    roomToDelete
+                    ===
+                    "operation-nord"
+
+                    ?
+
+                    "operation-vide"
+
+                    :
+
+                    "operation-nord"
+                );
 
 
             const confirmation =
                 confirm(
-                    `Supprimer l'opération "${state.room}" et tous ses dessins ?`
+                    `Supprimer l'opération "${roomToDelete}" et tous ses dessins ?`
                 );
 
 
             if (
                 !confirmation
             ) {
-
                 return;
-
             }
 
 
-            const operations =
-                localOperations()
-                    .filter(
-                        operation =>
-                            operation
-                            !==
-                            state.room
-                    );
+            /*
+                Très important :
+                on change l'opération active AVANT
+                de supprimer dans Firebase.
+
+                Sinon le listener temps réel peut
+                recréer l'opération qu'on vient
+                de supprimer.
+            */
+
+            state.room =
+                nextRoom;
 
 
-            saveLocalOperations(
-                operations
-            );
+            try {
 
-
-            localStorage
-                .removeItem(
-                    "bcso-tableau-"
-                    +
-                    state.room
-                );
-
-
-            if (
-                state.firebaseReady
-                &&
-                state.database
-            ) {
-
-                await remove(
-
-                    ref(
-                        state.database,
-                        `tableaux/${state.room}`
-                    )
-
-                );
-
+                /* ==========================================
+                   SUPPRESSION FIREBASE
+                   ========================================== */
 
                 if (
-                    state.operationsRef
+                    state.firebaseReady
+                    &&
+                    state.database
                 ) {
 
                     await remove(
 
-                        child(
-                                state.operationsRef,
-                                state.room
-                            )
+                        ref(
+                            state.database,
+                            `tableaux/${roomToDelete}`
+                        )
 
                     );
 
+
+                    if (
+                        state.operationsRef
+                    ) {
+
+                        await remove(
+
+                            child(
+                                state.operationsRef,
+                                roomToDelete
+                            )
+
+                        );
+
+                    }
+
                 }
+
+
+                /* ==========================================
+                   NETTOYAGE LOCAL
+                   ========================================== */
+
+                const operationsToKeep =
+                    remainingOperations.length
+
+                    ?
+
+                    remainingOperations
+
+                    :
+
+                    [
+                        nextRoom
+                    ];
+
+
+                saveLocalOperations(
+                    operationsToKeep
+                );
+
+
+                localStorage
+                    .removeItem(
+                        "bcso-tableau-"
+                        +
+                        roomToDelete
+                    );
+
+
+                /* ==========================================
+                   CHANGEMENT D'OPÉRATION
+                   ========================================== */
+
+                goRoom(
+                    nextRoom
+                );
 
             }
 
+            catch (
+                error
+            ) {
 
-            goRoom(
-                operations[0]
-                ||
-                "operation-nord"
-            );
+                console.error(
+                    "Erreur suppression opération :",
+                    error
+                );
+
+
+                /*
+                    On remet l'ancienne opération active
+                    si Firebase refuse la suppression.
+                */
+
+                state.room =
+                    roomToDelete;
+
+
+                alert(
+                    "Erreur pendant la suppression de l'opération. Ouvre F12 > Console si ça recommence."
+                );
+
+            }
 
         }
     );
