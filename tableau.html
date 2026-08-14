@@ -1130,6 +1130,7 @@ from
 import {
     getDatabase,
     ref,
+    child,
     push,
     set,
     remove,
@@ -1701,7 +1702,7 @@ document
 
                 await set(
 
-                    ref(
+                    child(
                         state.operationsRef,
                         room
                     ),
@@ -1835,10 +1836,10 @@ document
 
                     await remove(
 
-                        ref(
-                            state.operationsRef,
-                            state.room
-                        )
+                        child(
+                                state.operationsRef,
+                                state.room
+                            )
 
                     );
 
@@ -2326,7 +2327,7 @@ async function saveItem(
 
         await set(
 
-            ref(
+            child(
                 state.itemsRef,
                 id
             ),
@@ -2380,7 +2381,7 @@ async function liveSave(
 
         await set(
 
-            ref(
+            child(
                 state.itemsRef,
                 id
             ),
@@ -2424,7 +2425,7 @@ async function deleteItem(
 
         await remove(
 
-            ref(
+            child(
                 state.itemsRef,
                 id
             )
@@ -3908,12 +3909,11 @@ document
         "click",
         async function() {
 
-    if (
-        !state.canEdit
-    ) {
-        return;
-    }
-
+            if (
+                !state.canEdit
+            ) {
+                return;
+            }
 
 
             const confirmation =
@@ -3925,25 +3925,34 @@ document
             if (
                 !confirmation
             ) {
-
                 return;
-
             }
 
 
-            if (
-                state.firebaseReady
-                &&
-                state.itemsRef
-            ) {
+            try {
 
-                await remove(
+                if (
+                    state.firebaseReady
+                    &&
                     state.itemsRef
+                ) {
+
+                    await remove(
+                        state.itemsRef
+                    );
+
+                }
+
+
+                /* Nettoie aussi immédiatement l'affichage local. */
+
+                [
+                    ...state.layers.keys()
+                ]
+                .forEach(
+                    removeRendered
                 );
 
-            }
-
-            else {
 
                 state.localData =
                     {};
@@ -3952,23 +3961,29 @@ document
                 saveLocal();
 
 
-                [
-                    ...state.layers
-                        .keys()
-                ]
-                .forEach(
-                    removeRendered
+                state.ownHistory =
+                    [];
+
+            }
+
+            catch (
+                error
+            ) {
+
+                console.error(
+                    "Erreur Reset Firebase :",
+                    error
+                );
+
+
+                alert(
+                    "Erreur Firebase pendant le Reset. Ouvre F12 > Console si ça recommence."
                 );
 
             }
 
-
-            state.ownHistory =
-                [];
-
         }
     );
-
 
 
 
@@ -4496,7 +4511,7 @@ async function startFirebase() {
 
                         await set(
 
-                            ref(
+                            child(
                                 state.operationsRef,
                                 state.room
                             ),
